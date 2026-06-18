@@ -38,7 +38,6 @@ ME_KEYWORDS = ["Middle East", "Gulf", "GCC", "Dubai", "Doha", "Abu Dhabi", "Cair
 # Helper function to calculate days elapsed
 def calculate_days_ago(published_date_str):
     try:
-        # Try to parse standard date format YYYY-MM-DD
         pub_date = datetime.strptime(published_date_str.split()[0], "%Y-%m-%d").date()
     except:
         pub_date = datetime.now().date()
@@ -119,7 +118,6 @@ def fetch_aviation_news():
                 summary = entry.summary if 'summary' in entry else ""
                 link = entry.link
                 
-                # Convert RSS timestamp to standard string date
                 if 'published_parsed' in entry:
                     published = datetime(*entry.published_parsed[:3]).strftime("%Y-%m-%d")
                 else:
@@ -160,7 +158,10 @@ def fetch_aviation_news():
 # Fetch Data
 df_news = fetch_aviation_news()
 
-# Apply the date tracking logic to the DataFrame
+# --- [تحديث جوهري للترتيب] الترتيب الفوري من الأحدث إلى الأقدم ---
+df_news = df_news.sort_values(by="Published", ascending=False).reset_index(drop=True)
+
+# Apply the date tracking logic to the DataFrame after sorting
 df_news['Date_Display'] = df_news['Published'].apply(calculate_days_ago)
 
 # --- Streamlit Frontend UI ---
@@ -211,12 +212,12 @@ for index, row in filtered_df.iterrows():
     with st.container():
         st.markdown(f"#### {row['Title']}")
         
-        # Operational Info Tags (Updated to show calculated Date and Days Elapsed)
+        # Operational Info Tags
         c1, c2, c3, c4 = st.columns([1.5, 1.5, 2.5, 2.5])
         c1.markdown(f"📍 **Region:** `{row['Region']}`")
         c2.markdown(f"⚙️ **Type:** `{row['Type']}`")
         c3.markdown(f"🏢 **Airlines:** `{row['Airlines']}`")
-        c4.markdown(f"📅 **Timeline:** `{row['Date_Display']}`")  # <--- يعرض التاريخ وعمر الخبر هنا
+        c4.markdown(f"📅 **Timeline:** `{row['Date_Display']}`")
         
         st.write(row['Summary'])
         st.markdown("[View Full Analysis & Source Link 🔗]({})".format(row['Link']))
