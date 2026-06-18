@@ -8,6 +8,17 @@ import random
 # 1. Page Configuration
 st.set_page_config(page_title="Aviation Operations Intel", page_icon="✈️", layout="wide")
 
+# --- 💡 كود احترافي لإخفاء حقوق الاستضافة والقوائم التلقائية لـ Streamlit ---
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+
 # 2. Target Airlines List for Analytics
 AIRLINES_LIST = [
     "Aegean Airlines", "Aerospace Jet", "Afriqiyah Airways", "Air Algerie", "Air Anka", 
@@ -158,7 +169,7 @@ def fetch_aviation_news():
 # Fetch Data
 df_news = fetch_aviation_news()
 
-# --- [تحديث جوهري للترتيب] الترتيب الفوري من الأحدث إلى الأقدم ---
+# --- ⏳ ترتيب فوري للبيانات لتبدأ دائماً من الأحدث للأقدم ---
 df_news = df_news.sort_values(by="Published", ascending=False).reset_index(drop=True)
 
 # Apply the date tracking logic to the DataFrame after sorting
