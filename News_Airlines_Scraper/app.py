@@ -4,26 +4,51 @@ import streamlit as st
 import plotly.express as px
 from datetime import datetime, timedelta
 import random
+import streamlit.components.v1 as components
 
 # 1. Page Configuration
 st.set_page_config(page_title="Aviation Operations Intel", page_icon="✈️", layout="wide")
 
-# --- 💡 كود محدث وقوي لإخفاء حقوق الاستضافة والقوائم من الجوال والكمبيوتر معاً ---
-hide_st_style = """
-            <style>
-            /* إخفاء القائمة العلوية */
-            [data-testid="stHeader"] {visibility: hidden;}
-            header {visibility: hidden;}
-            
-            /* إخفاء شريط الأدوات وحقوق الأسفل بالكامل */
-            [data-testid="stFooter"] {visibility: hidden;}
-            footer {visibility: hidden;}
-            
-            /* إخفاء أيقونة القائمة الجانبية التلقائية */
-            #MainMenu {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
+# --- 🎯 كود جافا سكريبت قاطع لمسح حقوق الاستضافة والقوائم نهائياً من الجذور ---
+components.html(
+    """
+    <script>
+    function removeElements() {
+        // البحث عن الـ footer والـ header ومسحهما تماماً
+        var elementsToRemove = [
+            window.parent.document.querySelector("footer"),
+            window.parent.document.querySelector("header"),
+            window.parent.document.querySelector('[data-testid="stHeader"]'),
+            window.parent.document.querySelector('[data-testid="stFooter"]'),
+            window.parent.document.getElementById("MainMenu")
+        ];
+        
+        elementsToRemove.forEach(function(el) {
+            if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+        });
+    }
+    // تشغيل الدالة فوراً وتكرارها للتأكد بعد تحميل الصفحة بالكامل
+    removeElements();
+    setInterval(removeElements, 500);
+    </script>
+    """,
+    height=0,
+    width=0,
+)
+
+# تعزيز الـ CSS كخطوة دعم إضافية
+st.markdown(
+    """
+    <style>
+    [data-testid="stHeader"], header, [data-testid="stFooter"], footer, #MainMenu {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # 2. Target Airlines List for Analytics
