@@ -3,7 +3,7 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-import hashlib
+import hashlib, re, time
 import streamlit.components.v1 as components
 
 # ── Embedded logos ──
@@ -15,140 +15,119 @@ SGS_ICON_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAA4CAYAAAC7UX
 SGS_FULL_URI = "data:image/png;base64,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"
 
 # ════════════════════════════════════════════
+# CONFIG
+# ════════════════════════════════════════════
 st.set_page_config(
     page_title="AIB | Aviation Intelligence Brief",
-    page_icon=SGS_ICON_URI,   # SGS green icon as favicon
+    page_icon=SGS_ICON_URI,
     layout="wide"
 )
 
 components.html("""<script>
 function rmv(){
   ["footer","header",'[data-testid="stHeader"]','[data-testid="stFooter"]',"#MainMenu"]
-  .forEach(function(s){var e=window.parent.document.querySelector(s);if(e){e.style.display="none";}});
+  .forEach(function(s){var e=window.parent.document.querySelector(s);if(e)e.style.display="none";});
 }
-rmv(); setInterval(rmv,600);
+rmv(); setInterval(rmv,800);
 </script>""", height=0, width=0)
 
+# ════════════════════════════════════════════
+# CSS
+# ════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 [data-testid="stHeader"],header,[data-testid="stFooter"],footer,#MainMenu{display:none!important;}
 
-/* ═══ ROOT ═══ */
 .stApp{background:#F4F6F9!important;font-family:'Inter','IBM Plex Sans Arabic',sans-serif;color:#1A1D23;}
 .main .block-container{padding:0 2rem 4rem 2rem!important;max-width:1500px;}
 
-/* ═══ TOP NAV ═══ */
-.top-nav{
-  background:#FFFFFF;border-bottom:2px solid #E4E8EE;
-  padding:0.65rem 2.5rem;display:flex;align-items:center;gap:1rem;
-  position:sticky;top:0;z-index:999;
-  box-shadow:0 2px 16px rgba(0,130,70,0.07);
-  margin-bottom:0;
-}
-.nav-sgs{height:38px;width:auto;}
-.nav-div{width:1px;height:32px;background:#E4E8EE;margin:0 0.25rem;}
-.nav-aib{
-  font-size:2.2rem;font-weight:800;color:#008246;
-  letter-spacing:-1px;line-height:1;
-}
-.nav-full-title{
-  font-size:1.0rem;font-weight:600;color:#1A1D23;
-  letter-spacing:-0.2px;line-height:1.2;
-}
-.nav-sub{font-size:0.72rem;color:#9CA3AF;font-weight:400;margin-top:1px;}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:0.75rem;}
-.nav-badge{
-  background:rgba(0,130,70,0.1);border:1.5px solid rgba(0,130,70,0.25);
-  color:#006B38;font-size:0.68rem;font-weight:700;letter-spacing:0.8px;
-  text-transform:uppercase;padding:4px 11px;border-radius:20px;
-}
-.nav-time{font-size:0.72rem;color:#9CA3AF;}
+/* NAV */
+.top-nav{background:#fff;border-bottom:2px solid #E4E8EE;padding:0.65rem 2rem;
+  display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:999;
+  box-shadow:0 2px 16px rgba(0,130,70,0.07);margin-bottom:0;}
+.nav-sgs{height:36px;width:auto;}
+.nav-div{width:1px;height:30px;background:#E4E8EE;}
+.nav-titles{display:flex;flex-direction:column;justify-content:center;}
+.nav-main{font-size:1.05rem;font-weight:700;color:#1A1D23;letter-spacing:-0.2px;line-height:1.2;}
+.nav-sub{font-size:0.7rem;color:#9CA3AF;font-weight:400;}
+.nav-aib{font-size:2.4rem;font-weight:800;color:#008246;letter-spacing:-2px;
+  line-height:1;margin-left:auto;font-style:italic;}
+.nav-right{display:flex;align-items:center;gap:0.65rem;margin-right:1rem;}
+.nav-badge-live{background:rgba(0,130,70,0.1);border:1.5px solid rgba(0,130,70,0.25);
+  color:#006B38;font-size:0.65rem;font-weight:700;letter-spacing:0.8px;
+  text-transform:uppercase;padding:4px 10px;border-radius:20px;}
+.nav-badge-off{background:rgba(220,38,38,0.08);border:1.5px solid rgba(220,38,38,0.2);
+  color:#B91C1C;font-size:0.65rem;font-weight:700;letter-spacing:0.8px;
+  text-transform:uppercase;padding:4px 10px;border-radius:20px;}
+.nav-time{font-size:0.7rem;color:#9CA3AF;}
 
-/* ═══ KPI GRID ═══ */
+/* KPI */
 .kpi-grid{display:flex;gap:1rem;margin:1.5rem 0;flex-wrap:wrap;}
-.kpi-card{
-  flex:1;min-width:155px;background:#FFFFFF;
-  border:1px solid #E4E8EE;border-radius:12px;
-  padding:1.15rem 1.4rem;position:relative;overflow:hidden;
-  box-shadow:0 1px 4px rgba(0,0,0,0.04);
-  transition:box-shadow 0.2s,transform 0.15s;
-}
+.kpi-card{flex:1;min-width:155px;background:#fff;border:1px solid #E4E8EE;border-radius:12px;
+  padding:1.1rem 1.4rem;position:relative;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:box-shadow 0.2s,transform 0.15s;}
 .kpi-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-2px);}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
 .kpi-card.g::before{background:linear-gradient(90deg,#008246,#00B46A);}
 .kpi-card.b::before{background:linear-gradient(90deg,#2563EB,#60A5FA);}
-.kpi-card.t::before{background:linear-gradient(90deg,#0891B2,#22D3EE);}
 .kpi-card.a::before{background:linear-gradient(90deg,#D97706,#FBBF24);}
-.kpi-label{font-size:0.68rem;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#9CA3AF;margin-bottom:0.35rem;}
+.kpi-label{font-size:0.67rem;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#9CA3AF;margin-bottom:0.3rem;}
 .kpi-value{font-size:1.85rem;font-weight:700;line-height:1;color:#1A1D23;}
-.kpi-icon{position:absolute;right:1.1rem;top:1rem;font-size:1.3rem;opacity:0.13;}
+.kpi-icon{position:absolute;right:1rem;top:1rem;font-size:1.3rem;opacity:0.12;}
 
-/* ═══ SECTION HEADER ═══ */
-.sec-hdr{
-  display:flex;align-items:center;gap:0.6rem;
-  font-size:0.95rem;font-weight:700;color:#1A1D23;
-  margin:1.75rem 0 1rem 0;padding-bottom:0.6rem;
-  border-bottom:2px solid #EDF0F4;
-}
+/* SEC HEADER */
+.sec-hdr{display:flex;align-items:center;gap:0.6rem;font-size:0.92rem;font-weight:700;color:#1A1D23;
+  margin:1.75rem 0 1rem 0;padding-bottom:0.6rem;border-bottom:2px solid #EDF0F4;}
 .sec-bar{width:4px;height:18px;border-radius:2px;flex-shrink:0;}
-.sec-count{margin-left:auto;font-size:0.75rem;font-weight:500;color:#9CA3AF;}
+.sec-count{margin-left:auto;font-size:0.73rem;font-weight:500;color:#9CA3AF;}
 
-/* ═══ CATEGORY BADGE ═══ */
-.cat-badge{
-  display:inline-flex;align-items:center;gap:0.5rem;
-  font-size:0.7rem;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
-  padding:5px 14px;border-radius:20px;margin:1.4rem 0 0.8rem 0;
-}
+/* CAT BADGE */
+.cat-badge{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.7rem;font-weight:700;
+  letter-spacing:0.8px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin:1.4rem 0 0.8rem 0;}
 .cat-local{background:rgba(0,130,70,0.08);color:#006B38;border:1.5px solid rgba(0,130,70,0.2);}
 .cat-intl {background:rgba(37,99,235,0.08);color:#1D4ED8;border:1.5px solid rgba(37,99,235,0.2);}
 
-/* ═══ NEWS CARD ═══ */
-.news-card{
-  background:#FFFFFF;border:1.5px solid #E4E8EE;border-radius:14px;
-  padding:1.2rem 1.4rem 1rem 1.4rem;margin-bottom:0.8rem;
-  cursor:pointer;transition:all 0.2s ease;
-  position:relative;overflow:hidden;
+/* NEWS CARD */
+.news-card{background:#fff;border:1.5px solid #E4E8EE;border-radius:14px;
+  padding:1.2rem 1.4rem 1rem 1.4rem;margin-bottom:0.8rem;cursor:pointer;
+  transition:all 0.2s ease;position:relative;overflow:hidden;
   box-shadow:0 1px 4px rgba(0,0,0,0.04);
-  text-decoration:none!important;display:block;color:inherit;
-}
-.news-card:hover{box-shadow:0 8px 26px rgba(0,0,0,0.1);transform:translateY(-2px);}
+  text-decoration:none!important;display:block;color:inherit;}
+.news-card:hover{box-shadow:0 8px 26px rgba(0,0,0,0.1);transform:translateY(-2px);text-decoration:none!important;}
 .news-card:active{transform:scale(0.99);}
 
-/* brand left stripe */
+/* brand stripe */
 .news-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:14px 0 0 14px;}
 .card-saudia::before  {background:#008246;}
 .card-riyadh::before  {background:#4C1D95;}
 .card-flynas::before  {background:#0891B2;}
 .card-flyadeal::before{background:#7E22CE;}
 
-/* brand hover flood */
+/* brand hover */
 .card-saudia:hover  {border-color:#008246!important;background:rgba(0,130,70,0.03)!important;box-shadow:0 8px 26px rgba(0,130,70,0.15)!important;}
 .card-riyadh:hover  {border-color:#4C1D95!important;background:rgba(76,29,149,0.03)!important;box-shadow:0 8px 26px rgba(76,29,149,0.15)!important;}
 .card-flynas:hover  {border-color:#0891B2!important;background:rgba(8,145,178,0.03)!important;box-shadow:0 8px 26px rgba(8,145,178,0.15)!important;}
 .card-flyadeal:hover{border-color:#7E22CE!important;background:rgba(126,34,206,0.03)!important;box-shadow:0 8px 26px rgba(126,34,206,0.15)!important;}
 
-/* active full flood */
+/* brand active */
 .card-saudia:active  {background:rgba(0,130,70,0.1)!important;}
 .card-riyadh:active  {background:rgba(76,29,149,0.1)!important;}
 .card-flynas:active  {background:rgba(8,145,178,0.1)!important;}
 .card-flyadeal:active{background:rgba(126,34,206,0.1)!important;}
 
-/* ── Logo in card ── */
-.card-logo{
-  position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);
-  width:96px;height:72px;
-  display:flex;align-items:center;justify-content:center;
-}
+/* card logo */
+.card-logo{position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);
+  width:96px;height:72px;display:flex;align-items:center;justify-content:center;}
 .card-logo img{max-width:96px;max-height:72px;width:auto;height:auto;object-fit:contain;}
 
-.card-title{font-size:0.92rem;font-weight:600;color:#111827;margin:0 0 0.5rem 0;line-height:1.45;padding-right:112px;}
+.card-title{font-size:0.92rem;font-weight:600;color:#111827;margin:0 0 0.5rem 0;
+  line-height:1.45;padding-right:112px;}
 .card-summary{font-size:0.8rem;color:#6B7280;line-height:1.65;margin-bottom:0.8rem;}
-.card-meta{display:flex;flex-wrap:wrap;gap:0.4rem;align-items:center;}
+.card-meta{display:flex;flex-wrap:wrap;gap:0.38rem;align-items:center;}
 
-/* tags */
-.tag{display:inline-flex;align-items:center;gap:3px;font-size:0.67rem;font-weight:600;
-     padding:3px 7px;border-radius:5px;letter-spacing:0.15px;white-space:nowrap;}
+.tag{display:inline-flex;align-items:center;gap:3px;font-size:0.66rem;font-weight:600;
+  padding:3px 7px;border-radius:5px;white-space:nowrap;}
 .t-ksa  {background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;}
 .t-me   {background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;}
 .t-glob {background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB;}
@@ -156,28 +135,27 @@ st.markdown("""
 .t-comm {background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
 .t-air  {background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0;}
 .t-src  {background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE;}
-.t-time {font-size:0.65rem;color:#9CA3AF;background:none;border:none;margin-left:auto;}
+.t-time {font-size:0.64rem;color:#9CA3AF;background:none;border:none;margin-left:auto;}
 
-/* ═══ SIDEBAR ═══ */
-[data-testid="stSidebar"]{background:#FFFFFF!important;border-right:1px solid #E4E8EE!important;}
+/* SIDEBAR */
+[data-testid="stSidebar"]{background:#fff!important;border-right:1px solid #E4E8EE!important;}
 [data-testid="stSidebar"] .block-container{padding:1.5rem 1rem!important;}
 .sb-hdr{text-align:center;padding:0.5rem 0 1.2rem;border-bottom:1px solid #F0F2F5;margin-bottom:1rem;}
 .sb-lbl{font-size:0.66rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9CA3AF;margin:1rem 0 0.35rem;}
 .stMultiSelect [data-baseweb="select"]{background:#F9FAFB!important;border-color:#E5E7EB!important;border-radius:8px!important;}
 
-/* source chip for non-local */
-.source-strip{font-size:0.68rem;color:#6B7280;margin-top:0.5rem;}
+/* ALERT BOXES */
+.alert-warn{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;
+  padding:0.75rem 1rem;font-size:0.8rem;color:#92400E;margin:1rem 0;}
+.alert-err{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;
+  padding:0.75rem 1rem;font-size:0.8rem;color:#991B1B;margin:1rem 0;}
+.alert-ok{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;
+  padding:0.75rem 1rem;font-size:0.8rem;color:#166534;margin:1rem 0;}
 
 hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:#F4F6F9;}
 ::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px;}
-
-/* info box */
-.info-box{
-  background:#FFF8E7;border:1px solid #FDE68A;border-radius:10px;
-  padding:0.75rem 1rem;font-size:0.8rem;color:#92400E;margin-bottom:1rem;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -198,28 +176,52 @@ AIRLINES_LIST = [
     "Aegean Airlines","Air Algerie","Air Cairo","Air China","Almasria","Alpha Star",
     "Azerbaijan Airlines","Badr Airlines","Biman Bangladesh","British Airways","Buraq Air",
     "Cebu Pacific","China Eastern","China Southern","Corendon Airlines","Daallo Airlines",
-    "Egypt Air","Emirates","Ethiopian Airlines","Flyadeal","Flydubai","Flynas","Freebird Airlines",
-    "Garuda Indonesia","Gulf Air","Hainan Airlines","Himalaya Airlines","Iran Air",
-    "Iraqi Airways","ITA Airways","Jazeera Airways","Kuwait Airways","Libyan Airlines",
-    "LOT Polish","Malaysia Airlines","Max Air","MedSky Airways","Middle East Airlines",
-    "Nepal Airlines","Nesma Airlines","Nile Air","Oman Air","Pegasus Airlines",
-    "Philippine Airlines","Qatar Airways","RED C Aviation","Red Sea Airlines","Riyadh Air",
-    "Royal Air Maroc","Royal Brunei","RwandAir","Saudi Arabian Airlines","Saudia",
-    "Scat Airlines","Somon Air","Southwind Airlines","Sudan Airways","Syrian Airlines",
-    "Tarco Aviation","Thai Airways","The Helicopter Company","Tunis Air","Turkish Airlines",
-    "Turkmenistan Airlines","Uganda Airlines","Wizz Air","Yemenia",
+    "Egypt Air","Emirates","Ethiopian Airlines","Flyadeal","Flydubai","Flynas",
+    "Freebird Airlines","Garuda Indonesia","Gulf Air","Hainan Airlines","Himalaya Airlines",
+    "Iran Air","Iraqi Airways","ITA Airways","Jazeera Airways","Kuwait Airways",
+    "Libyan Airlines","LOT Polish","Malaysia Airlines","Max Air","MedSky Airways",
+    "Middle East Airlines","Nepal Airlines","Nesma Airlines","Nile Air","Oman Air",
+    "Pegasus Airlines","Philippine Airlines","Qatar Airways","RED C Aviation",
+    "Red Sea Airlines","Riyadh Air","Royal Air Maroc","Royal Brunei","RwandAir",
+    "Saudi Arabian Airlines","Saudia","Scat Airlines","Somon Air","Southwind Airlines",
+    "Sudan Airways","Syrian Airlines","Tarco Aviation","Thai Airways",
+    "The Helicopter Company","Tunis Air","Turkish Airlines","Turkmenistan Airlines",
+    "Uganda Airlines","Wizz Air","Yemenia",
 ]
 
-KSA_KW = ["Saudi","KSA","Riyadh","Jeddah","Dammam","Madinah","NEOM","Red Sea","GACA","SGS","Hajj","Umrah","KAIA","KKIA"]
-ME_KW  = ["Middle East","Gulf","GCC","Dubai","Doha","Abu Dhabi","Cairo","Amman","Kuwait","Bahrain","Oman","Jordan"]
+KSA_KW = ["Saudi","KSA","Riyadh","Jeddah","Dammam","Madinah","NEOM","Red Sea",
+           "GACA","SGS","Hajj","Umrah","KAIA","KKIA","King Abdulaziz","King Khalid"]
+ME_KW  = ["Middle East","Gulf","GCC","Dubai","Doha","Abu Dhabi","Cairo","Amman",
+           "Kuwait","Bahrain","Oman","Jordan","Beirut","Baghdad"]
 
+RSS_FEEDS = [
+    ("Simple Flying",  "https://simpleflying.com/feed/"),
+    ("Flight Global",  "https://www.flightglobal.com/135.rss"),
+    ("The Air Current","https://theaircurrent.com/feed/"),
+    ("Airways Mag",    "https://airwaysmag.com/feed/"),
+    ("Travel Weekly",  "https://www.travelweekly.com/rss/airline-news"),
+]
+
+OPS_WORDS = ["delay","strike","maintenance","airport","fuel","airspace","route",
+             "slots","handling","capacity","turnaround","ground","terminal","apron",
+             "ramp","baggage","check-in","boarding","lounge","departure","arrival"]
+
+# ════════════════════════════════════════════
+# HELPERS
+# ════════════════════════════════════════════
 def time_ago(pub_dt):
     diff = datetime.now() - pub_dt
-    h = int(diff.total_seconds() / 3600)
     m = int(diff.total_seconds() / 60)
-    if m < 60:  return f"{max(1,m)}m ago"
+    h = m // 60
+    if m < 1:   return "Just now"
+    if m < 60:  return f"{m}m ago"
     if h < 24:  return f"{h}h ago"
     return f"{diff.days}d ago"
+
+def clean_html(text):
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def detect_local(airlines_str):
     for a in LOCAL_AIRLINES:
@@ -227,55 +229,89 @@ def detect_local(airlines_str):
             return a
     return None
 
-def uid(entry):
-    """Stable unique ID from entry"""
-    return hashlib.md5((entry.get("link","") + entry.get("title","")).encode()).hexdigest()
+def uid(title, link):
+    return hashlib.md5(f"{title[:60]}{link}".encode()).hexdigest()
 
-@st.cache_data(ttl=600)
+# ════════════════════════════════════════════
+# FETCH — ROBUST WITH DETAILED DIAGNOSTICS
+# ════════════════════════════════════════════
+@st.cache_data(ttl=600, show_spinner=False)
 def fetch_news():
-    """
-    Fetch REAL aviation news via RSS only.
-    No mock data — shows only what is actually retrieved.
-    Returns empty DataFrame if feed unreachable.
-    """
-    feeds = [
-        ("Simple Flying",     "https://simpleflying.com/feed/"),
-        ("Flight Global",     "https://www.flightglobal.com/135.rss"),
-        ("Aviation Week",     "https://aviationweek.com/rss.xml"),
-        ("ch-aviation",       "https://www.ch-aviation.com/portal/news/rss"),
-    ]
-
-    seen_ids = set()
     articles = []
+    seen     = set()
+    log      = []
 
-    for source_name, url in feeds:
+    for source_name, url in RSS_FEEDS:
         try:
-            feed = feedparser.parse(url, request_headers={"User-Agent":"Mozilla/5.0"})
-            if not feed.entries:
-                continue
-            for e in feed.entries:
-                entry_id = uid(e)
-                if entry_id in seen_ids:
-                    continue
-                seen_ids.add(entry_id)
+            headers = {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                )
+            }
+            feed = feedparser.parse(url, request_headers=headers)
 
-                title   = e.get("title","").strip()
-                summary = e.get("summary","").strip()
+            status  = feed.get("status", 0)
+            n       = len(feed.entries)
+            bozo    = feed.get("bozo", False)
+            bozo_ex = str(feed.get("bozo_exception",""))
+
+            if status == 200 and n > 0:
+                log.append(f"✅ {source_name}: {n} entries")
+            elif status == 200 and n == 0:
+                log.append(f"⚠️ {source_name}: responded but 0 entries (bozo={bozo})")
+                continue
+            elif status in (301, 302):
+                log.append(f"🔀 {source_name}: redirect {status}")
+                continue
+            elif status == 403:
+                log.append(f"🔒 {source_name}: 403 Forbidden (blocked)")
+                continue
+            elif status == 404:
+                log.append(f"❌ {source_name}: 404 Not Found")
+                continue
+            else:
+                # feedparser sometimes returns 0 status but has entries (no-HTTP mode)
+                if n > 0:
+                    log.append(f"⚡ {source_name}: status={status} but got {n} entries")
+                else:
+                    log.append(f"❓ {source_name}: status={status}, entries=0, bozo_ex={bozo_ex[:60]}")
+                    continue
+
+            for e in feed.entries:
+                title   = clean_html(e.get("title","")).strip()
+                summary = clean_html(e.get("summary", e.get("description",""))).strip()
                 link    = e.get("link","#")
 
-                # Parse published date as datetime
-                if hasattr(e, "published_parsed") and e.published_parsed:
-                    pub_dt = datetime(*e.published_parsed[:6])
+                if not title or len(title) < 10:
+                    continue
+
+                entry_id = uid(title, link)
+                if entry_id in seen:
+                    continue
+                seen.add(entry_id)
+
+                # Parse date
+                if hasattr(e,"published_parsed") and e.published_parsed:
+                    try:
+                        pub_dt = datetime(*e.published_parsed[:6])
+                    except:
+                        pub_dt = datetime.now()
+                elif hasattr(e,"updated_parsed") and e.updated_parsed:
+                    try:
+                        pub_dt = datetime(*e.updated_parsed[:6])
+                    except:
+                        pub_dt = datetime.now()
                 else:
                     pub_dt = datetime.now()
 
-                # Only last 30 days
-                if (datetime.now() - pub_dt).days > 30:
+                # Skip older than 60 days
+                if (datetime.now() - pub_dt).days > 60:
                     continue
 
                 full = f"{title} {summary}".lower()
 
-                # Filter: must mention a tracked airline OR KSA/ME keyword
                 airlines = [a for a in AIRLINES_LIST if a.lower() in full]
                 is_ksa   = any(k.lower() in full for k in KSA_KW)
                 is_me    = any(k.lower() in full for k in ME_KW)
@@ -283,60 +319,64 @@ def fetch_news():
                 if not (airlines or is_ksa or is_me):
                     continue
 
-                ops_w = ["delay","strike","maintenance","airport","fuel","airspace",
-                         "route","slots","handling","capacity","turnaround","ground","terminal"]
-                cat = "Operations / Infrastructure" if any(w in full for w in ops_w) else "Commercial / Fleet"
-
+                cat    = "Operations / Infrastructure" if any(w in full for w in OPS_WORDS) else "Commercial / Fleet"
                 al_str = ", ".join(airlines) if airlines else "Regional Market"
-                is_local = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
-
+                local  = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
                 region = "Saudi Arabia 🇸🇦" if is_ksa else ("Middle East 🌍" if is_me else "Global / Regional")
 
                 articles.append({
-                    "Title":    title,
-                    "Summary":  summary,
-                    "Link":     link,
-                    "PubDT":    pub_dt,
-                    "Airlines": al_str,
-                    "Region":   region,
-                    "Type":     cat,
-                    "IsLocal":  is_local,
-                    "Source":   source_name,
+                    "Title":   title,
+                    "Summary": summary[:400],
+                    "Link":    link,
+                    "PubDT":   pub_dt,
+                    "Airlines":al_str,
+                    "Region":  region,
+                    "Type":    cat,
+                    "IsLocal": local,
+                    "Source":  source_name,
                 })
+
         except Exception as ex:
-            continue  # silently skip failed feeds
+            log.append(f"💥 {source_name}: Exception — {type(ex).__name__}: {str(ex)[:80]}")
+            continue
+
+    log_str = "\n".join(log)
 
     if not articles:
-        return pd.DataFrame()
+        return pd.DataFrame(), log_str
 
     df = pd.DataFrame(articles)
-    # De-duplicate by title similarity (first 80 chars)
-    df["title_key"] = df["Title"].str[:80].str.lower().str.strip()
-    df = df.drop_duplicates(subset="title_key").drop(columns="title_key")
+    # Final dedup on title
+    df["_tkey"] = df["Title"].str.lower().str[:70].str.strip()
+    df = df.drop_duplicates(subset="_tkey").drop(columns="_tkey")
     # Sort newest first
     df = df.sort_values("PubDT", ascending=False).reset_index(drop=True)
-    return df
+    return df, log_str
 
 # ════════════════════════════════════════════
-# LOAD
+# LOAD DATA
 # ════════════════════════════════════════════
-df = fetch_news()
-is_empty = df.empty
+with st.spinner("Fetching live aviation news…"):
+    df, fetch_log = fetch_news()
+
+is_live  = not df.empty
 
 # ════════════════════════════════════════════
 # TOP NAV
 # ════════════════════════════════════════════
 now_str = datetime.now().strftime("%d %b %Y · %H:%M")
+badge_html = '<span class="nav-badge-live">● Live</span>' if is_live else '<span class="nav-badge-off">● Offline</span>'
+
 st.markdown(f"""
 <div class="top-nav">
   <img src="{SGS_FULL_URI}" class="nav-sgs" alt="SGS">
   <div class="nav-div"></div>
-  <div>
-    <div class="nav-full-title">Aviation Intelligence Brief</div>
-    <div class="nav-sub">Ground Operations &amp; Fleet Intelligence · Saudi &amp; Regional Market</div>
+  <div class="nav-titles">
+    <div class="nav-main">Aviation Intelligence Brief</div>
+    <div class="nav-sub">Saudi Arabia &amp; Regional Market · Ground Ops &amp; Fleet Intel</div>
   </div>
   <div class="nav-right">
-    <span class="nav-badge">{"Live" if not is_empty else "Offline"}</span>
+    {badge_html}
     <span class="nav-time">{now_str}</span>
   </div>
   <div class="nav-aib">AIB</div>
@@ -344,27 +384,21 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════
-# EMPTY STATE
-# ════════════════════════════════════════════
-if is_empty:
-    st.markdown("""
-    <div style="margin:2rem 0;" class="info-box">
-    ⚠️ <strong>Could not reach live RSS feeds.</strong>
-    This may be due to network restrictions in the deployment environment.
-    Try running locally or check your internet connection.
-    The dashboard will auto-retry every 10 minutes.
-    </div>
-    """, unsafe_allow_html=True)
-    st.stop()
-
-# ════════════════════════════════════════════
 # SIDEBAR
 # ════════════════════════════════════════════
 with st.sidebar:
     st.markdown(f'''<div class="sb-hdr">
       <img src="{SGS_FULL_URI}" style="height:28px;"><br>
-      <span style="font-size:0.64rem;color:#9CA3AF;letter-spacing:0.5px;">AVIATION INTELLIGENCE BRIEF</span>
+      <span style="font-size:0.63rem;color:#9CA3AF;letter-spacing:0.5px;">AVIATION INTELLIGENCE BRIEF</span>
     </div>''', unsafe_allow_html=True)
+
+    if not is_live:
+        st.error("⚠️ No live data. Check RSS access.")
+        st.markdown(f"""**Feed diagnostics:**
+```
+{fetch_log}
+```""")
+        st.stop()
 
     st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
     sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","International ✈️"],
@@ -387,17 +421,20 @@ with st.sidebar:
                              label_visibility="collapsed")
 
     st.markdown("---")
-    st.markdown(f'''<div style="font-size:0.68rem;color:#9CA3AF;">
-      {len(df)} articles · refreshes every 10 min<br>
-      Last update: {now_str}
+    st.markdown(f'''<div style="font-size:0.67rem;color:#9CA3AF;line-height:1.6;">
+      {len(df)} articles fetched<br>
+      Refreshes every 10 min<br>
+      Last: {now_str}
     </div>''', unsafe_allow_html=True)
+
+    with st.expander("🔍 Feed diagnostics"):
+        st.text(fetch_log)
 
 # ════════════════════════════════════════════
 # KPI
 # ════════════════════════════════════════════
 local_n = int(df["IsLocal"].sum())
 intl_n  = len(df) - local_n
-ksa_n   = len(df[df["Region"]=="Saudi Arabia 🇸🇦"])
 ops_n   = len(df[df["Type"]=="Operations / Infrastructure"])
 
 st.markdown(f"""
@@ -412,132 +449,102 @@ st.markdown(f"""
 # ════════════════════════════════════════════
 # CHARTS
 # ════════════════════════════════════════════
-BG    = "#FFFFFF"
-GRID  = "#F0F2F5"
-TEXT  = "#6B7280"
-TITLE_C = "#1A1D23"
-PALETTE = ["#008246","#2563EB","#0891B2","#7E22CE","#D97706","#DC2626","#0F766E"]
+BG = "#FFFFFF"; GRID = "#F0F2F5"; TC = "#6B7280"; TT = "#1A1D23"
+P  = ["#008246","#2563EB","#0891B2","#7E22CE","#D97706","#DC2626"]
 
 st.markdown('<div class="sec-hdr"><span class="sec-bar" style="background:#008246;"></span>Analytics Overview</div>', unsafe_allow_html=True)
 
-c1, c2, c3 = st.columns(3)
+c1,c2,c3 = st.columns(3)
 
 with c1:
-    rc = df["Region"].value_counts().reset_index(); rc.columns=["Region","Count"]
-    fig = go.Figure(go.Pie(
-        labels=rc["Region"], values=rc["Count"], hole=0.62,
-        marker=dict(colors=PALETTE[:len(rc)], line=dict(color="#F4F6F9", width=3)),
-        textinfo="percent", textfont=dict(size=11, color="#374151"),
-        hovertemplate="<b>%{label}</b><br>%{value} articles · %{percent}<extra></extra>"
-    ))
-    fig.add_annotation(text=f"<b>{len(df)}</b><br><span style='font-size:9px;color:#9CA3AF'>articles</span>",
-                       x=0.5,y=0.5,showarrow=False,font=dict(size=15,color="#1A1D23"))
-    fig.update_layout(title=dict(text="Geographic Reach",font=dict(size=12,color=TITLE_C,family="Inter"),x=0),
+    rc = df["Region"].value_counts().reset_index(); rc.columns=["R","C"]
+    fig=go.Figure(go.Pie(labels=rc["R"],values=rc["C"],hole=0.62,
+        marker=dict(colors=P[:len(rc)],line=dict(color="#F4F6F9",width=3)),
+        textinfo="percent",textfont=dict(size=11,color="#374151"),
+        hovertemplate="<b>%{label}</b><br>%{value} articles · %{percent}<extra></extra>"))
+    fig.add_annotation(text=f"<b>{len(df)}</b><br><span style='font-size:9px'>articles</span>",
+                       x=0.5,y=0.5,showarrow=False,font=dict(size=15,color=TT))
+    fig.update_layout(title=dict(text="Geographic Reach",font=dict(size=12,color=TT,family="Inter"),x=0),
                       paper_bgcolor=BG,plot_bgcolor=BG,showlegend=True,
-                      legend=dict(font=dict(size=10,color=TEXT),bgcolor="rgba(0,0,0,0)"),
+                      legend=dict(font=dict(size=10,color=TC),bgcolor="rgba(0,0,0,0)"),
                       margin=dict(t=40,b=10,l=10,r=10),height=260)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig,use_container_width=True)
 
 with c2:
-    tc = df["Type"].value_counts().reset_index(); tc.columns=["Type","Count"]
-    fig2 = go.Figure(go.Bar(
-        y=tc["Type"], x=tc["Count"], orientation="h",
-        marker=dict(color=["#008246","#2563EB"][:len(tc)],
-                    line=dict(color="rgba(0,0,0,0)",width=0)),
-        text=tc["Count"], textposition="outside",
-        textfont=dict(size=12,color="#374151"),
-        hovertemplate="<b>%{y}</b><br>%{x} articles<extra></extra>",
-    ))
-    fig2.update_layout(title=dict(text="Activity Type",font=dict(size=12,color=TITLE_C,family="Inter"),x=0),
+    tc2=df["Type"].value_counts().reset_index(); tc2.columns=["T","C"]
+    fig2=go.Figure(go.Bar(y=tc2["T"],x=tc2["C"],orientation="h",
+        marker=dict(color=P[:len(tc2)],line=dict(color="rgba(0,0,0,0)",width=0)),
+        text=tc2["C"],textposition="outside",textfont=dict(size=12,color="#374151"),
+        hovertemplate="<b>%{y}</b><br>%{x} articles<extra></extra>"))
+    fig2.update_layout(title=dict(text="Activity Type",font=dict(size=12,color=TT,family="Inter"),x=0),
                        paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,
-                       xaxis=dict(showgrid=True,gridcolor=GRID,zeroline=False,tickfont=dict(color=TEXT),showline=False),
+                       xaxis=dict(showgrid=True,gridcolor=GRID,zeroline=False,tickfont=dict(color=TC),showline=False),
                        yaxis=dict(showgrid=False,tickfont=dict(color="#374151",size=10),showline=False),
                        margin=dict(t=40,b=10,l=10,r=55),height=260,bargap=0.45)
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2,use_container_width=True)
 
 with c3:
-    # Timeline: articles per day (last 14 days)
-    df["date"] = df["PubDT"].dt.date
-    date_cnt = df.groupby("date").size().reset_index(name="Count")
-    date_cnt = date_cnt.sort_values("date")
-    fig3 = go.Figure(go.Scatter(
-        x=date_cnt["date"].astype(str), y=date_cnt["Count"],
-        mode="lines+markers",
-        line=dict(color="#008246", width=2.5, shape="spline"),
-        marker=dict(color="#008246", size=6, line=dict(color="#FFFFFF",width=1.5)),
-        fill="tozeroy", fillcolor="rgba(0,130,70,0.07)",
-        hovertemplate="<b>%{x}</b><br>%{y} articles<extra></extra>",
-    ))
-    fig3.update_layout(title=dict(text="Articles Timeline",font=dict(size=12,color=TITLE_C,family="Inter"),x=0),
+    df["date"]=df["PubDT"].dt.date
+    dc=df.groupby("date").size().reset_index(name="C").sort_values("date")
+    fig3=go.Figure(go.Scatter(x=dc["date"].astype(str),y=dc["C"],mode="lines+markers",
+        line=dict(color="#008246",width=2.5,shape="spline"),
+        marker=dict(color="#008246",size=6,line=dict(color="#fff",width=1.5)),
+        fill="tozeroy",fillcolor="rgba(0,130,70,0.07)",
+        hovertemplate="<b>%{x}</b><br>%{y} articles<extra></extra>"))
+    fig3.update_layout(title=dict(text="Articles Timeline",font=dict(size=12,color=TT,family="Inter"),x=0),
                        paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,
-                       xaxis=dict(showgrid=False,tickfont=dict(color=TEXT,size=9),showline=False,tickangle=-30),
-                       yaxis=dict(showgrid=True,gridcolor=GRID,tickfont=dict(color=TEXT),showline=False,rangemode="tozero"),
+                       xaxis=dict(showgrid=False,tickfont=dict(color=TC,size=9),showline=False,tickangle=-30),
+                       yaxis=dict(showgrid=True,gridcolor=GRID,tickfont=dict(color=TC),showline=False,rangemode="tozero"),
                        margin=dict(t=40,b=10,l=10,r=10),height=260)
-    st.plotly_chart(fig3, use_container_width=True)
+    st.plotly_chart(fig3,use_container_width=True)
 
 # ════════════════════════════════════════════
-# FILTER + FEED
+# FILTER
 # ════════════════════════════════════════════
-df_f = df[
-    df["Region"].isin(sel_region) &
-    df["Type"].isin(sel_type) &
-    df["Source"].isin(sel_src)
-]
-df_local = df_f[df_f["IsLocal"]==True].copy()
-df_intl  = df_f[df_f["IsLocal"]==False].copy()
+df_f = df[df["Region"].isin(sel_region) & df["Type"].isin(sel_type) & df["Source"].isin(sel_src)]
+df_local = df_f[df_f["IsLocal"]==True]
+df_intl  = df_f[df_f["IsLocal"]==False]
 
 def render_card(row):
     carrier = detect_local(row["Airlines"])
-    meta    = AIRLINE_META.get(carrier, {})
+    meta    = AIRLINE_META.get(carrier,{})
     cls     = meta.get("cls","")
     logo    = meta.get("logo","")
-
-    al_str = row["Airlines"]
-    if len(al_str)>44: al_str=al_str[:44]+"…"
-
-    region_cls = "t-ksa" if "Saudi" in row["Region"] else ("t-me" if "Middle" in row["Region"] else "t-glob")
-    type_cls   = "t-ops" if "Operations" in row["Type"] else "t-comm"
-
-    t_str = time_ago(row["PubDT"])
-    summary_s = row["Summary"][:220]+("…" if len(row["Summary"])>220 else "")
-    # Strip HTML tags from summary
-    import re
-    summary_s = re.sub(r'<[^>]+>','', summary_s)
-
-    logo_html = f'''<div class="card-logo"><img src="{logo}" alt=""></div>''' if logo else ""
-
+    al_str  = row["Airlines"][:44]+("…" if len(row["Airlines"])>44 else "")
+    rc      = "t-ksa" if "Saudi" in row["Region"] else ("t-me" if "Middle" in row["Region"] else "t-glob")
+    tc_tag  = "t-ops" if "Operations" in row["Type"] else "t-comm"
+    t_str   = time_ago(row["PubDT"])
+    summ    = row["Summary"][:220]+("…" if len(row["Summary"])>220 else "")
+    logo_h  = f'''<div class="card-logo"><img src="{logo}" alt=""></div>''' if logo else ""
     st.markdown(f"""
-<a class="news-card {cls}" href="{row["Link"]}" target="_blank" rel="noopener noreferrer">
-  {logo_html}
-  <div class="card-title">{row["Title"]}</div>
-  <div class="card-summary">{summary_s}</div>
+<a class="news-card {cls}" href="{row['Link']}" target="_blank" rel="noopener noreferrer">
+  {logo_h}
+  <div class="card-title">{row['Title']}</div>
+  <div class="card-summary">{summ}</div>
   <div class="card-meta">
-    <span class="tag {region_cls}">{row["Region"]}</span>
-    <span class="tag {type_cls}">{row["Type"]}</span>
+    <span class="tag {rc}">{row['Region']}</span>
+    <span class="tag {tc_tag}">{row['Type']}</span>
     <span class="tag t-air">✈ {al_str}</span>
-    <span class="tag t-src">📰 {row["Source"]}</span>
+    <span class="tag t-src">📰 {row['Source']}</span>
     <span class="tag t-time">🕐 {t_str}</span>
   </div>
 </a>""", unsafe_allow_html=True)
 
-total_shown = len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0
-total_shown += len(df_intl) if "International ✈️" in sel_cat else 0
+total = (len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0) +         (len(df_intl)  if "International ✈️" in sel_cat else 0)
 
 st.markdown(f'''<div class="sec-hdr">
   <span class="sec-bar" style="background:#2563EB;"></span>
   News Feed · Operational Intel
-  <span class="sec-count">{total_shown} results</span>
+  <span class="sec-count">{total} results</span>
 </div>''', unsafe_allow_html=True)
 
 if "Local Airlines 🇸🇦" in sel_cat and not df_local.empty:
     st.markdown('<div><span class="cat-badge cat-local">🇸🇦 Local Airlines</span></div>', unsafe_allow_html=True)
-    for _, row in df_local.iterrows():
-        render_card(row)
+    for _,row in df_local.iterrows(): render_card(row)
 
 if "International ✈️" in sel_cat and not df_intl.empty:
     st.markdown('<div><span class="cat-badge cat-intl">✈️ International Airlines</span></div>', unsafe_allow_html=True)
-    for _, row in df_intl.iterrows():
-        render_card(row)
+    for _,row in df_intl.iterrows(): render_card(row)
 
-if df_f.empty or total_shown == 0:
-    st.markdown('<div style="background:#fff;border:1px solid #E4E8EE;border-radius:12px;padding:2.5rem;text-align:center;color:#9CA3AF;">No articles match the current filters.</div>', unsafe_allow_html=True)
+if total == 0:
+    st.markdown('<div style="background:#fff;border:1px solid #E4E8EE;border-radius:12px;padding:2.5rem;text-align:center;color:#9CA3AF;margin-top:1rem;">No articles match the current filters.</div>', unsafe_allow_html=True)
