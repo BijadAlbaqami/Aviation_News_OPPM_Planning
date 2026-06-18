@@ -208,7 +208,7 @@ df_news = df_news.sort_values(by="Published", ascending=False).reset_index(drop=
 df_news['Date_Display'] = df_news['Published'].apply(calculate_days_ago)
 
 # --- Streamlit Frontend UI ---
-st.title("✈️ Aviation Intelligence Bried")
+st.title("✈️ Aviation Intelligence Brief")
 st.subheader("Real-time monitoring and analytics for targeted airlines and regional operations")
 st.markdown("---")
 
