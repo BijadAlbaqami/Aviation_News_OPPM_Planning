@@ -8,12 +8,19 @@ import random
 # 1. Page Configuration
 st.set_page_config(page_title="Aviation Operations Intel", page_icon="✈️", layout="wide")
 
-# --- 💡 كود احترافي لإخفاء حقوق الاستضافة والقوائم التلقائية لـ Streamlit ---
+# --- 💡 كود محدث وقوي لإخفاء حقوق الاستضافة والقوائم من الجوال والكمبيوتر معاً ---
 hide_st_style = """
             <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
+            /* إخفاء القائمة العلوية */
+            [data-testid="stHeader"] {visibility: hidden;}
             header {visibility: hidden;}
+            
+            /* إخفاء شريط الأدوات وحقوق الأسفل بالكامل */
+            [data-testid="stFooter"] {visibility: hidden;}
+            footer {visibility: hidden;}
+            
+            /* إخفاء أيقونة القائمة الجانبية التلقائية */
+            #MainMenu {visibility: hidden;}
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
