@@ -7,7 +7,7 @@ import random
 import streamlit.components.v1 as components
 
 # 1. Page Configuration
-st.set_page_config(page_title="Aviation Operations Intel", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="OPPM", page_icon="✈️", layout="wide")
 
 # --- 🎯 كود جافا سكريبت قاطع لمسح حقوق الاستضافة والقوائم نهائياً من الجذور ---
 components.html(
