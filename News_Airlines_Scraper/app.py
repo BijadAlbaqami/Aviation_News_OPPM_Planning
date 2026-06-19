@@ -182,18 +182,30 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   color:#B91C1C;font-size:0.65rem;font-weight:700;letter-spacing:0.8px;
   text-transform:uppercase;padding:4px 10px;border-radius:20px;white-space:nowrap;}
 
-.kpi-grid{display:flex;gap:1rem;margin:1.5rem 0;flex-wrap:wrap;}
-.kpi-card{flex:1;min-width:155px;background:#fff;border:1px solid #E4E8EE;border-radius:12px;
-  padding:1.1rem 1.4rem;position:relative;overflow:hidden;
-  box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:box-shadow 0.2s,transform 0.15s;}
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  gap:1rem;
+  margin:1.5rem 0;
+}
+.kpi-card{
+  min-width:0; /* allow grid track to shrink smoothly instead of forcing reflow */
+  background:#fff;border:1px solid #E4E8EE;border-radius:12px;
+  padding:1.1rem 1.2rem;position:relative;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);transition:box-shadow 0.2s,transform 0.15s;
+}
 .kpi-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.09);transform:translateY(-2px);}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
 .kpi-card.g::before{background:linear-gradient(90deg,#008246,#00B46A);}
 .kpi-card.b::before{background:linear-gradient(90deg,#2563EB,#60A5FA);}
 .kpi-card.a::before{background:linear-gradient(90deg,#D97706,#FBBF24);}
 .kpi-card.t::before{background:linear-gradient(90deg,#0891B2,#22D3EE);}
-.kpi-label{font-size:0.67rem;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;color:#9CA3AF;margin-bottom:0.3rem;}
-.kpi-value{font-size:1.85rem;font-weight:700;line-height:1;color:#1A1D23;}
+.kpi-label{
+  font-size:0.67rem;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;
+  color:#9CA3AF;margin-bottom:0.3rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.kpi-value{font-size:clamp(1.3rem,2.4vw,1.85rem);font-weight:700;line-height:1;color:#1A1D23;}
 .kpi-icon{position:absolute;right:1rem;top:1rem;font-size:1.3rem;opacity:0.12;}
 
 .sec-hdr{display:flex;align-items:center;gap:0.6rem;font-size:0.92rem;font-weight:700;color:#1A1D23;
@@ -276,10 +288,10 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
    RESPONSIVE — adapts fluidly to any mobile screen size
    ═══════════════════════════════════════════════════ */
 
-/* Tablets and small laptops */
+/* Tablets and small laptops — switch to 3 columns, no reflow jumps */
 @media (max-width:900px){
-  .kpi-grid{gap:0.6rem;}
-  .kpi-card{min-width:130px;padding:0.9rem 1.1rem;}
+  .kpi-grid{grid-template-columns:repeat(3, minmax(0,1fr));gap:0.6rem;}
+  .kpi-card{padding:0.9rem 1.1rem;}
   .kpi-value{font-size:1.5rem;}
 }
 
@@ -288,8 +300,8 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
   .main .block-container{padding:0 0.65rem 3rem 0.65rem!important;}
 
   /* KPI: 2 per row instead of forcing 5 into one line */
-  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
-  .kpi-card{min-width:0;padding:0.85rem 1rem;}
+  .kpi-grid{grid-template-columns:repeat(2, minmax(0,1fr));gap:0.6rem;}
+  .kpi-card{padding:0.85rem 1rem;}
   .kpi-icon{font-size:1.05rem;right:0.8rem;top:0.8rem;}
   .kpi-value{font-size:1.3rem;}
   .kpi-label{font-size:0.6rem;}
@@ -326,6 +338,11 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
   .nav-full-title{font-size:0.85rem;}
   .nav-sub{font-size:0.58rem;}
 }
+
+/* ── Lock charts: hide any residual modebar, block drag-cursor affordance ── */
+.js-plotly-plot .plotly .modebar{display:none!important;}
+.js-plotly-plot{touch-action:pan-y;} /* page can still scroll, chart itself can't be dragged/zoomed */
+.js-plotly-plot .nsewdrag, .js-plotly-plot .draglayer{cursor:default!important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -698,6 +715,20 @@ st.markdown(f"""
 BG="white"; GRID="#F0F2F5"; TC="#6B7280"; TT="#1A1D23"
 P=["#008246","#2563EB","#0891B2","#7E22CE","#D97706","#DC2626","#0F766E","#BE185D"]
 
+# Lock charts as view-only — no zoom, pan, drag, scroll-zoom, legend toggling,
+# or toolbar. Hover tooltips stay enabled (read-only), nothing can be dragged
+# or rearranged by the user.
+STATIC_CHART_CONFIG = {
+    "displayModeBar": False,   # hides the floating toolbar (zoom/pan/etc. buttons)
+    "scrollZoom": False,       # mouse-wheel / pinch zoom disabled
+    "doubleClick": False,      # disables double-click reset/zoom
+    "showAxisDragHandles": False,
+    "showTips": False,
+    "editable": False,         # chart titles/labels cannot be edited by the user
+    "staticPlot": False,       # keep hover tooltips working, but...
+}
+# Each figure also gets dragmode disabled directly (belt-and-braces vs config alone)
+
 st.markdown('<div class="sec-hdr"><span class="sec-bar" style="background:#008246;"></span>Analytics Overview</div>', unsafe_allow_html=True)
 
 c1,c2,c3 = st.columns(3)
@@ -710,10 +741,10 @@ with c1:
     fig.add_annotation(text=f"<b>{len(df)}</b><br><span style='font-size:9px'>articles</span>",
                        x=0.5,y=0.5,showarrow=False,font=dict(size=15,color=TT))
     fig.update_layout(title=dict(text="Geographic Reach",font=dict(size=12,color=TT,family="Inter"),x=0),
-                      paper_bgcolor=BG,plot_bgcolor=BG,
+                      paper_bgcolor=BG,plot_bgcolor=BG,dragmode=False,
                       legend=dict(font=dict(size=10,color=TC),bgcolor="rgba(0,0,0,0)"),
                       margin=dict(t=40,b=10,l=10,r=10),height=260)
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig,use_container_width=True,config=STATIC_CHART_CONFIG)
 
 with c2:
     tc2=df["Type"].value_counts().reset_index(); tc2.columns=["T","C"]
@@ -722,11 +753,11 @@ with c2:
         text=tc2["C"],textposition="outside",textfont=dict(size=12,color="#374151"),
         hovertemplate="<b>%{y}</b><br>%{x} articles<extra></extra>"))
     fig2.update_layout(title=dict(text="Activity Type",font=dict(size=12,color=TT,family="Inter"),x=0),
-                       paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,
-                       xaxis=dict(showgrid=True,gridcolor=GRID,zeroline=False,tickfont=dict(color=TC),showline=False),
-                       yaxis=dict(showgrid=False,tickfont=dict(color="#374151",size=10),showline=False),
+                       paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,dragmode=False,
+                       xaxis=dict(showgrid=True,gridcolor=GRID,zeroline=False,tickfont=dict(color=TC),showline=False,fixedrange=True),
+                       yaxis=dict(showgrid=False,tickfont=dict(color="#374151",size=10),showline=False,fixedrange=True),
                        margin=dict(t=40,b=10,l=10,r=60),height=260,bargap=0.45)
-    st.plotly_chart(fig2,use_container_width=True)
+    st.plotly_chart(fig2,use_container_width=True,config=STATIC_CHART_CONFIG)
 
 with c3:
     df["date"] = df["PubDT"].apply(lambda d: to_local(d).date())
@@ -737,11 +768,11 @@ with c3:
         fill="tozeroy",fillcolor="rgba(0,130,70,0.07)",
         hovertemplate="<b>%{x}</b><br>%{y} articles<extra></extra>"))
     fig3.update_layout(title=dict(text="Articles Timeline",font=dict(size=12,color=TT,family="Inter"),x=0),
-                       paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,
-                       xaxis=dict(showgrid=False,tickfont=dict(color=TC,size=9),showline=False,tickangle=-30),
-                       yaxis=dict(showgrid=True,gridcolor=GRID,tickfont=dict(color=TC),showline=False,rangemode="tozero"),
+                       paper_bgcolor=BG,plot_bgcolor=BG,showlegend=False,dragmode=False,
+                       xaxis=dict(showgrid=False,tickfont=dict(color=TC,size=9),showline=False,tickangle=-30,fixedrange=True),
+                       yaxis=dict(showgrid=True,gridcolor=GRID,tickfont=dict(color=TC),showline=False,rangemode="tozero",fixedrange=True),
                        margin=dict(t=40,b=10,l=10,r=10),height=260)
-    st.plotly_chart(fig3,use_container_width=True)
+    st.plotly_chart(fig3,use_container_width=True,config=STATIC_CHART_CONFIG)
 
 # ════════════════════════════════════════════
 # FILTER + FEED
