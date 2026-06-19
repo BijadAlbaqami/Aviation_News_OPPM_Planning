@@ -2,7 +2,7 @@ import feedparser
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib, re
 import streamlit.components.v1 as components
 
@@ -19,17 +19,89 @@ st.set_page_config(
     layout="wide"
 )
 components.html("""<script>
-function rmv(){["footer","header","[data-testid=\"stHeader\"]","[data-testid=\"stFooter\"]","#MainMenu"]
+function rmv(){["footer","header","[data-testid=\\"stHeader\\"]","[data-testid=\\"stFooter\\"]","#MainMenu"]
 .forEach(function(s){var e=window.parent.document.querySelector(s);if(e)e.style.display="none";});}
 rmv();setInterval(rmv,800);
 </script>""",height=0,width=0)
 
+# Capture the visitor's browser-local timezone offset (minutes EAST of UTC).
+# Renders all article times / "last updated" in the VISITOR's local clock
+# instead of the server's clock (often UTC on cloud hosting).
+tz_offset_param = st.query_params.get("tz_offset", None)
+if tz_offset_param is None:
+    components.html("""
+    <script>
+    const off = -new Date().getTimezoneOffset();
+    const url = new URL(window.parent.location.href);
+    if (url.searchParams.get('tz_offset') === null) {
+        url.searchParams.set('tz_offset', off);
+        window.parent.location.replace(url.toString());
+    }
+    </script>
+    """, height=0, width=0)
+    BROWSER_TZ_OFFSET_MIN = 180  # fallback: Saudi Arabia (UTC+3) until JS redirect completes
+else:
+    try:
+        BROWSER_TZ_OFFSET_MIN = int(tz_offset_param)
+    except (TypeError, ValueError):
+        BROWSER_TZ_OFFSET_MIN = 180
+
+_LOCAL_TZ = timezone(timedelta(minutes=BROWSER_TZ_OFFSET_MIN))
+
+def now_local():
+    """Current time in the VISITOR's browser timezone (not the server's)."""
+    return datetime.now(timezone.utc).astimezone(_LOCAL_TZ)
+
+def to_local(dt_naive):
+    """Convert a naive datetime (assumed UTC, as feedparser provides) to browser-local time."""
+    if dt_naive.tzinfo is None:
+        dt_naive = dt_naive.replace(tzinfo=timezone.utc)
+    return dt_naive.astimezone(_LOCAL_TZ)
+
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ═══ FORCE LIGHT THEME — override OS/browser dark mode ═══ */
+:root, html, body {
+  color-scheme: light only !important;
+}
 [data-testid="stHeader"],header,[data-testid="stFooter"],footer,#MainMenu{display:none!important;}
-.stApp{background:#F4F6F9!important;font-family:'Inter','IBM Plex Sans Arabic',sans-serif;color:#1A1D23;}
+
+html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"]{
+  background:#F4F6F9!important;
+  color:#1A1D23!important;
+}
+.stApp{font-family:'Inter','IBM Plex Sans Arabic',sans-serif;}
 .main .block-container{padding:0 2rem 4rem 2rem!important;max-width:1500px;}
+
+/* Force light on all Streamlit text/containers regardless of OS theme */
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
+[data-testid="stVerticalBlock"], [data-testid="stHorizontalBlock"],
+.stMarkdown, .stText, label, .stCaption {
+  color:#1A1D23!important;
+}
+/* Force light on multiselect / widgets even in dark OS mode */
+[data-baseweb="select"], [data-baseweb="popover"], [data-baseweb="menu"]{
+  background:#FFFFFF!important; color:#1A1D23!important;
+}
+[data-baseweb="tag"]{ background:rgba(0,130,70,0.12)!important; color:#006B38!important; }
+ul[role="listbox"]{ background:#FFFFFF!important; }
+li[role="option"]{ background:#FFFFFF!important; color:#1A1D23!important; }
+li[role="option"]:hover{ background:#F4F6F9!important; }
+
+/* Streamlit slider on dark-mode mobile browsers */
+[data-testid="stSlider"] div, [data-testid="stSlider"] span { color:#1A1D23!important; }
+
+@media (prefers-color-scheme: dark) {
+  html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+  [data-testid="stSidebar"] {
+    background:#F4F6F9 !important;
+    color:#1A1D23 !important;
+  }
+  [data-testid="stSidebar"] { background:#FFFFFF !important; }
+}
 
 .top-nav{background:#fff;border-bottom:2px solid #E4E8EE;padding:0.65rem 2rem;
   display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:999;
@@ -251,8 +323,10 @@ RSS_FEEDS = [
 # ════════════════════════════════════════════
 # HELPERS
 # ════════════════════════════════════════════
-def time_ago(pub_dt):
-    diff = datetime.now() - pub_dt
+def time_ago(pub_dt_utc_naive):
+    """pub_dt_utc_naive: naive datetime assumed UTC (as stored in PubDT)."""
+    pub_aware = pub_dt_utc_naive.replace(tzinfo=timezone.utc) if pub_dt_utc_naive.tzinfo is None else pub_dt_utc_naive
+    diff = now_local() - pub_aware
     m = int(diff.total_seconds() / 60)
     h = m // 60
     if m < 1:  return "Just now"
@@ -294,7 +368,8 @@ def fetch_news(days_back: int):
     articles = []
     seen     = set()
     log      = []
-    cutoff   = datetime.now() - timedelta(days=days_back)
+    # cutoff is computed in UTC, since feedparser's published_parsed is UTC
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days_back)
 
     for source_name, url in RSS_FEEDS:
         try:
@@ -321,13 +396,13 @@ def fetch_news(days_back: int):
                     continue
                 seen.add(entry_id)
 
-                # Parse published date
-                pub_dt = datetime.now()
+                # Parse published date — feedparser's *_parsed is UTC (struct_time)
+                pub_dt = datetime.now(timezone.utc)
                 for attr in ("published_parsed","updated_parsed","created_parsed"):
                     val = getattr(e, attr, None)
                     if val:
                         try:
-                            pub_dt = datetime(*val[:6])
+                            pub_dt = datetime(*val[:6], tzinfo=timezone.utc)
                             break
                         except: pass
 
@@ -381,7 +456,7 @@ def fetch_news(days_back: int):
 # ════════════════════════════════════════════
 # TOP NAV — rendered before sidebar
 # ════════════════════════════════════════════
-now_str = datetime.now().strftime("%d %b %Y · %H:%M")
+now_str = now_local().strftime("%d %b %Y · %H:%M")
 
 # We need days_back before fetching — use session state default
 if "days_back" not in st.session_state:
@@ -536,7 +611,7 @@ with c2:
     st.plotly_chart(fig2,use_container_width=True)
 
 with c3:
-    df["date"]=df["PubDT"].dt.date
+    df["date"] = df["PubDT"].apply(lambda d: to_local(d).date())
     dc=df.groupby("date").size().reset_index(name="C").sort_values("date")
     fig3=go.Figure(go.Scatter(x=dc["date"].astype(str),y=dc["C"],mode="lines+markers",
         line=dict(color="#008246",width=2.5,shape="spline"),
