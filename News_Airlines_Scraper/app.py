@@ -74,7 +74,7 @@ html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"]{
   color:#1A1D23!important;
 }
 .stApp{font-family:'Inter','IBM Plex Sans Arabic',sans-serif;}
-.main .block-container{padding:0 2rem 4rem 2rem!important;max-width:1500px;}
+.main .block-container{padding:0 clamp(0.75rem,3vw,2rem) 4rem clamp(0.75rem,3vw,2rem)!important;max-width:1500px;}
 
 /* Force light on all Streamlit text/containers regardless of OS theme */
 [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
@@ -103,23 +103,84 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   [data-testid="stSidebar"] { background:#FFFFFF !important; }
 }
 
-.top-nav{background:#fff;border-bottom:2px solid #E4E8EE;padding:0.65rem 2rem;
-  display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:999;
-  box-shadow:0 2px 16px rgba(0,130,70,0.07);}
-.nav-sgs{height:36px;width:auto;}
-.nav-div{width:1px;height:30px;background:#E4E8EE;}
-.nav-titles{display:flex;flex-direction:column;justify-content:center;}
-.nav-main{font-size:1.05rem;font-weight:700;color:#1A1D23;letter-spacing:-0.2px;line-height:1.2;}
-.nav-sub{font-size:0.7rem;color:#9CA3AF;font-weight:400;}
-.nav-right{display:flex;align-items:center;gap:0.65rem;margin-right:1rem;margin-left:auto;}
-.nav-aib{font-size:2.4rem;font-weight:800;color:#008246;letter-spacing:-2px;line-height:1;font-style:italic;}
+.top-nav{
+  background:#fff;border-bottom:2px solid #E4E8EE;
+  padding:0.85rem clamp(1rem,4vw,2rem);
+  display:flex;align-items:center;gap:clamp(0.6rem,2vw,1rem);
+  position:sticky;top:0;z-index:999;
+  box-shadow:0 2px 16px rgba(0,130,70,0.07);
+  flex-wrap:wrap;
+}
+.nav-brand-block{
+  display:flex;flex-direction:column;align-items:flex-start;gap:0.15rem;
+  flex:1 1 auto;min-width:0;
+}
+.nav-aib{
+  font-size:clamp(1.6rem,5vw,2.1rem);
+  font-weight:900;
+  letter-spacing:1px;
+  line-height:1;
+  color:#9CA3AF;
+  -webkit-text-stroke:1.4px #008246;
+  text-shadow:
+    0 1px 0 #fff,
+    0 0 1px rgba(0,130,70,0.5),
+    0 2px 6px rgba(0,130,70,0.18);
+  background:linear-gradient(180deg,#E5E7EB 0%,#9CA3AF 45%,#6B7280 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  font-family:'Inter',sans-serif;
+  white-space:nowrap;
+}
+.nav-full-title{
+  font-size:clamp(0.95rem,2.6vw,1.2rem);
+  font-weight:700;
+  color:#1A1D23;
+  letter-spacing:-0.2px;
+  line-height:1.25;
+  white-space:nowrap;
+}
+.nav-sub{
+  font-size:clamp(0.62rem,1.8vw,0.72rem);
+  color:#9CA3AF;font-weight:400;
+  white-space:normal;
+}
+.nav-sgs-row{
+  display:flex;align-items:center;gap:0.4rem;margin-top:0.2rem;
+}
+.nav-sgs{height:24px;width:auto;}
+.nav-sgs-row span{font-size:0.62rem;color:#9CA3AF;letter-spacing:0.4px;}
+
+.nav-right{
+  display:flex;align-items:center;gap:0.6rem;
+  flex:0 0 auto;margin-left:auto;
+}
+.nav-time{font-size:clamp(0.62rem,1.8vw,0.7rem);color:#9CA3AF;white-space:nowrap;}
+
+/* ── Mobile: stack nav vertically, centered ── */
+@media (max-width:640px){
+  .top-nav{
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:0.9rem 1rem;
+    gap:0.4rem;
+  }
+  .nav-brand-block{align-items:center;}
+  .nav-right{
+    margin-left:0;margin-top:0.3rem;
+    justify-content:center;width:100%;
+  }
+  .nav-sub{text-align:center;}
+}
+
 .nav-badge-live{background:rgba(0,130,70,0.1);border:1.5px solid rgba(0,130,70,0.25);
   color:#006B38;font-size:0.65rem;font-weight:700;letter-spacing:0.8px;
-  text-transform:uppercase;padding:4px 10px;border-radius:20px;}
+  text-transform:uppercase;padding:4px 10px;border-radius:20px;white-space:nowrap;}
 .nav-badge-off{background:rgba(220,38,38,0.08);border:1.5px solid rgba(220,38,38,0.2);
   color:#B91C1C;font-size:0.65rem;font-weight:700;letter-spacing:0.8px;
-  text-transform:uppercase;padding:4px 10px;border-radius:20px;}
-.nav-time{font-size:0.7rem;color:#9CA3AF;}
+  text-transform:uppercase;padding:4px 10px;border-radius:20px;white-space:nowrap;}
 
 .kpi-grid{display:flex;gap:1rem;margin:1.5rem 0;flex-wrap:wrap;}
 .kpi-card{flex:1;min-width:155px;background:#fff;border:1px solid #E4E8EE;border-radius:12px;
@@ -210,6 +271,61 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:#F4F6F9;}
 ::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px;}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — adapts fluidly to any mobile screen size
+   ═══════════════════════════════════════════════════ */
+
+/* Tablets and small laptops */
+@media (max-width:900px){
+  .kpi-grid{gap:0.6rem;}
+  .kpi-card{min-width:130px;padding:0.9rem 1.1rem;}
+  .kpi-value{font-size:1.5rem;}
+}
+
+/* Phones */
+@media (max-width:640px){
+  .main .block-container{padding:0 0.65rem 3rem 0.65rem!important;}
+
+  /* KPI: 2 per row instead of forcing 5 into one line */
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
+  .kpi-card{min-width:0;padding:0.85rem 1rem;}
+  .kpi-icon{font-size:1.05rem;right:0.8rem;top:0.8rem;}
+  .kpi-value{font-size:1.3rem;}
+  .kpi-label{font-size:0.6rem;}
+
+  /* Section headers wrap gracefully */
+  .sec-hdr{font-size:0.85rem;flex-wrap:wrap;row-gap:0.3rem;}
+  .sec-count{width:100%;margin-left:0;}
+
+  /* News cards: logo moves above title instead of overlapping */
+  .news-card{padding:1.1rem 1.1rem 0.9rem 1.1rem;}
+  .card-logo{
+    position:static;
+    width:auto;height:auto;
+    justify-content:flex-start;
+    margin-bottom:0.6rem;
+  }
+  .card-logo img.logo-landscape{max-width:88px;max-height:34px;}
+  .card-logo img.logo-portrait{max-width:42px;max-height:52px;}
+  .card-title{padding-right:0;font-size:0.88rem;}
+  .card-summary{font-size:0.78rem;}
+
+  /* Tags wrap and shrink slightly */
+  .tag{font-size:0.62rem;padding:2px 6px;}
+  .t-time{margin-left:0;flex-basis:100%;margin-top:0.2rem;}
+
+  /* Cat badges */
+  .cat-badge{font-size:0.64rem;padding:4px 11px;}
+}
+
+/* Very small phones */
+@media (max-width:380px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .nav-aib{font-size:1.5rem;}
+  .nav-full-title{font-size:0.85rem;}
+  .nav-sub{font-size:0.58rem;}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -533,14 +649,16 @@ badge = ('<span class="nav-badge-live">● Live</span>' if is_live
          else '<span class="nav-badge-off">● Offline</span>')
 st.markdown(f"""
 <div class="top-nav">
-  <img src="{SGS_FULL_URI}" class="nav-sgs" alt="SGS">
-  <div class="nav-div"></div>
-  <div class="nav-titles">
-    <div class="nav-main">Aviation Intelligence Brief</div>
+  <div class="nav-brand-block">
+    <div class="nav-aib">AIB</div>
+    <div class="nav-full-title">Aviation Intelligence Brief</div>
     <div class="nav-sub">Saudi Arabia &amp; Regional Market · Ground Ops &amp; Fleet Intel</div>
+    <div class="nav-sgs-row">
+      <img src="{SGS_FULL_URI}" class="nav-sgs" alt="SGS">
+      <span>SGS · Saudi Ground Services</span>
+    </div>
   </div>
   <div class="nav-right">{badge}<span class="nav-time">{now_str}</span></div>
-  <div class="nav-aib">AIB</div>
 </div>
 """, unsafe_allow_html=True)
 
