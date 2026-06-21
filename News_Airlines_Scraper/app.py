@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta, timezone
 import hashlib, re, os
 import streamlit.components.v1 as components
-
+import os
 # ── Local AIB logo file (place your AIB.jpg next to this script, or adjust path) ──
 AIB_LOGO_PATH = "News_Airlines_Scraper/AIB.jpg"
 AIB_LOGO_EXISTS = os.path.exists(AIB_LOGO_PATH)
