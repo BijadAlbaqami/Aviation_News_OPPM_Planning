@@ -125,16 +125,8 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   font-weight:900;
   letter-spacing:1px;
   line-height:1;
-  color:#9CA3AF;
-  -webkit-text-stroke:1.4px #008246;
-  text-shadow:
-    0 1px 0 #fff,
-    0 0 1px rgba(0,130,70,0.5),
-    0 2px 6px rgba(0,130,70,0.18);
-  background:linear-gradient(180deg,#E5E7EB 0%,#9CA3AF 45%,#6B7280 100%);
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
+  color:#008246;
+  text-shadow:0 2px 8px rgba(0,130,70,0.25);
   font-family:'Inter',sans-serif;
   white-space:nowrap;
 }
@@ -228,6 +220,30 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .card-swiss:active{background:rgba(214,0,28,0.1)!important;}
 .cat-all{background:rgba(8,145,178,0.08);color:#0E7490;border:1.5px solid rgba(8,145,178,0.2);}
 
+/* ── Top quick-jump navigation: Local / International / Swissport ── */
+.cat-nav{
+  background:#fff;border:1px solid #E4E8EE;border-radius:14px;
+  display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;
+  padding:0.7rem 1rem;
+  margin:1.1rem 0 0 0;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.cat-nav-pill{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-size:0.78rem;font-weight:700;
+  padding:7px 18px;border-radius:24px;
+  text-decoration:none!important;
+  border:1.5px solid transparent;
+  transition:all 0.18s ease;
+  cursor:pointer;scroll-behavior:smooth;
+}
+.cat-nav-local{background:rgba(0,130,70,0.08);color:#006B38;border-color:rgba(0,130,70,0.22);}
+.cat-nav-local:hover{background:rgba(0,130,70,0.16);transform:translateY(-1px);}
+.cat-nav-intl{background:rgba(37,99,235,0.08);color:#1D4ED8;border-color:rgba(37,99,235,0.22);}
+.cat-nav-intl:hover{background:rgba(37,99,235,0.16);transform:translateY(-1px);}
+.cat-nav-swiss{background:rgba(214,0,28,0.08);color:#B91C1C;border-color:rgba(214,0,28,0.22);}
+.cat-nav-swiss:hover{background:rgba(214,0,28,0.16);transform:translateY(-1px);}
+
 .news-card{background:#fff;border:1.5px solid #E4E8EE;border-radius:14px;
   padding:1.2rem 1.4rem 1rem 1.4rem;margin-bottom:0.8rem;cursor:pointer;
   transition:all 0.2s ease;position:relative;overflow:hidden;
@@ -266,6 +282,24 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .card-logo img.logo-portrait{
   max-width:54px;max-height:68px;
   width:auto;height:auto;object-fit:contain;
+}
+/* Small circular SGS-client marker (top-left) — shown when the article's
+   airline is a contracted SGS ground-handling client */
+.sgs-badge{
+  position:absolute;left:1.1rem;top:1.0rem;
+  width:22px;height:22px;border-radius:50%;
+  box-shadow:0 0 0 2px #fff,0 0 0 3px #008246;
+}
+/* Swissport wordmark chip — used in place of a logo image since no
+   Swissport logo file is embedded in this app */
+.swiss-badge{
+  display:inline-block;
+  background:#D6001C;color:#fff;
+  font-weight:800;font-style:italic;
+  font-size:0.72rem;letter-spacing:0.3px;
+  padding:5px 12px;border-radius:6px;
+  box-shadow:0 2px 6px rgba(214,0,28,0.22);
+  white-space:nowrap;
 }
 .card-title{font-size:0.92rem;font-weight:600;color:#111827;margin:0 0 0.5rem 0;line-height:1.45;padding-right:128px;}
 .card-summary{font-size:0.8rem;color:#6B7280;line-height:1.65;margin-bottom:0.8rem;}
@@ -332,12 +366,27 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
   .card-title{padding-right:0;font-size:0.88rem;}
   .card-summary{font-size:0.78rem;}
 
+  /* SGS-client marker: no longer absolute (was overlapping the airline
+     logo once .card-logo becomes static on mobile) — now flows inline
+     as a small ringed dot right after the logo, no overlap. */
+  .sgs-badge{
+    position:static;
+    display:inline-block;
+    width:16px;height:16px;
+    margin:0 0 0.5rem 0;
+    box-shadow:0 0 0 2px #fff,0 0 0 2px #008246;
+    vertical-align:middle;
+  }
+  .swiss-badge{font-size:0.68rem;padding:4px 10px;}
+
   /* Tags wrap and shrink slightly */
   .tag{font-size:0.62rem;padding:2px 6px;}
   .t-time{margin-left:0;flex-basis:100%;margin-top:0.2rem;}
 
   /* Cat badges */
   .cat-badge{font-size:0.64rem;padding:4px 11px;}
+  .cat-nav{gap:0.4rem;padding:0.6rem 0.7rem;}
+  .cat-nav-pill{font-size:0.7rem;padding:6px 13px;}
 }
 
 /* Very small phones */
@@ -368,6 +417,52 @@ AIRLINE_META = {
 }
 SWISSPORT_KW = {"Swissport"}
 
+# ── SGS client/partner badge logic ──────────────────────────────────
+# الناقلات المحلية (LOCAL_AIRLINES) عملاء SGS مباشرة دائماً.
+# SGS_PARTNER_AIRLINES = قائمة شركات الطيران الرسمية المتعاقدة مع SGS
+# (حدّثها هنا مستقبلاً إذا انضافت/انسحبت شركة).
+SGS_PARTNER_AIRLINES = {
+    "Aegean Airlines","Aerospace Jet","Afriqiyah Airways","Air Algerie","Air Anka",
+    "Air Asia X Berhad","Air Astana","Air Atlanta","Air Blue Limited","Air Cairo",
+    "Air China Limited","AIR MANAS Air Company L.L.C","Air Samarkand","Air Senegal","Air Sial",
+    "Air Peace Limited","Airhub Airlines","AKASA Air","Almasria Universal",
+    "Alpha Star Aviation","Ariana Afghan Airlines","Asia Union","Azerbaijan Airlines",
+    "Azman Air Services Limited","Badr Airlines","Biman Bangladesh Airlines",
+    "British Airways PLC","Buraq Air","Camair Co.","China Eastern Airlines",
+    "China Southern Airlines","Corendon Airlines","Daallo Airlines","Egypt Air",
+    "Emirates Airlines","Emirates Flight Training Academy","Ethiopian Airlines","Fits Air",
+    "Fly Khieva","Flyadeal","Flydubai","FlyEgypt","Flynas","Freebird Airlines",
+    "Garuda Indonesia","GENERAL AVIATION SUPPORT EGYPT","Gulf Air","Hadhramout Airways",
+    "Hainan Airlines","Hala Air","Himalaya Airlines","Iran Air","Iraqi Airways",
+    "ITA Transporto Aereo (ITA Airways)","Jazeera Airways","Jet Aviation","JETZHUB",
+    "Kuwait Airways","Libyan Airlines","LLC Nord Wind","LOT Polish Airlines",
+    "Malaysia Airlines","Manasik Aviation","Mauritanian Airlines",
+    "MAVI GOK HAVACILIK ANONIM SIRKETI","Max Air Ltd.","MedSky Airways","Middle East Airlines",
+    "Nepal Airlines Corporation","Nesma Airlines","Nile Air","Oman Air","Panorama Airways",
+    "Pegasus Airlines","Petroleum Air Services","Philippine Airlines","PT Citilink Indonesia",
+    "Qanot Sharq Airlines","Qatar Airways","Queen Bilqis Airways","RED C Aviation",
+    "Red Sea Airlines","Riyadh Air","Royal Air Maroc","Royal Brunei","Royal Fleet Services",
+    "Rwand Air","Safe Air","Saudi Arabian Airlines","Saudi Aramco","Saudi Private Avation",
+    "Saudi Royal Aviation","Scat Airlines","SKYPOWER EXPRESS AIRWAYS",
+    "SmartLynx Airlines Ltd.","Somon Air","Southwind Airlines","Spicejet Limited",
+    "Sudan Airways","Syrian Airlines","Tarco Aviation","Tashkentair LLC","Thai Airways",
+    "The Helicopter Company","Tunis Air","Turkish Airlines","Turkmenistan Airlines",
+    "Uganda Airlines","US-Bangla Airlines","Uzbekistan Airways","WizzAir","Xiamen Airlines",
+    "Yemenia-Yemen Airways",
+}
+
+def is_sgs_affiliated(row, carrier):
+    """True إذا كان الخبر يخص ناقل عميل SGS (محلي، أو مذكور صراحة في
+    SGS_PARTNER_AIRLINES، أو خبر دولي يقع ضمن نطاق السعودية حيث تشغّل
+    SGS عمليات الأرضي في 27 مطار)."""
+    if row.get("IsSwissport", False):
+        return False
+    if carrier is not None:
+        return True
+    if any(a.lower() in row["Airlines"].lower() for a in SGS_PARTNER_AIRLINES):
+        return True
+    return "Saudi Arabia" in row.get("Region", "")
+
 AIRLINES_LIST = [
     "Aegean Airlines","Air Algerie","Air Arabia","Air Cairo","Air China","Air France",
     "Swissport","Air India","Air Mauritius","Almasria","Alpha Star","Azerbaijan Airlines",
@@ -388,6 +483,23 @@ AIRLINES_LIST = [
     "The Helicopter Company","Tunis Air","Turkish Airlines",
     "Turkmenistan Airlines","Uganda Airlines","United Airlines",
     "Vueling","Wizz Air","Yemenia",
+    # ── إضافات: شركات الطيران المتعاقدة مع SGS (غير موجودة سابقاً بالقائمة) ──
+    "Aerospace Jet","Afriqiyah Airways","Air Anka","Air Asia X Berhad","Air Astana",
+    "Air Atlanta","Air Blue Limited","Air China Limited","AIR MANAS Air Company L.L.C",
+    "Air Samarkand","Air Senegal","Air Sial","Air Peace Limited","Airhub Airlines","AKASA Air",
+    "Almasria Universal","Alpha Star Aviation","Ariana Afghan Airlines","Asia Union",
+    "Azman Air Services Limited","Biman Bangladesh Airlines","British Airways PLC",
+    "Camair Co.","China Eastern Airlines","China Southern Airlines","Emirates Airlines",
+    "Emirates Flight Training Academy","Fits Air","Fly Khieva","FlyEgypt",
+    "GENERAL AVIATION SUPPORT EGYPT","Hadhramout Airways","Hala Air",
+    "ITA Transporto Aereo (ITA Airways)","Jet Aviation","JETZHUB","LLC Nord Wind",
+    "LOT Polish Airlines","Manasik Aviation","Mauritanian Airlines",
+    "MAVI GOK HAVACILIK ANONIM SIRKETI","Max Air Ltd.","Nepal Airlines Corporation",
+    "Panorama Airways","Petroleum Air Services","PT Citilink Indonesia","Qanot Sharq Airlines",
+    "Queen Bilqis Airways","Royal Fleet Services","Rwand Air","Safe Air","Saudi Aramco",
+    "Saudi Private Avation","Saudi Royal Aviation","SKYPOWER EXPRESS AIRWAYS",
+    "SmartLynx Airlines Ltd.","Spicejet Limited","Tashkentair LLC","US-Bangla Airlines",
+    "Uzbekistan Airways","WizzAir","Xiamen Airlines","Yemenia-Yemen Airways",
 ]
 
 # Wide keyword nets — aviation + KSA/ME + ground ops
@@ -704,6 +816,17 @@ if not is_live:
     st.stop()
 
 # ════════════════════════════════════════════
+# CATEGORY QUICK-JUMP NAV (Local / International / Swissport)
+# ════════════════════════════════════════════
+st.markdown("""
+<nav class="cat-nav">
+  <a href="#sec-local" class="cat-nav-pill cat-nav-local">🇸🇦 Local Airlines</a>
+  <a href="#sec-intl" class="cat-nav-pill cat-nav-intl">✈️ International Airlines</a>
+  <a href="#sec-swiss" class="cat-nav-pill cat-nav-swiss">🌐 Swissport</a>
+</nav>
+""", unsafe_allow_html=True)
+
+# ════════════════════════════════════════════
 # KPI
 # ════════════════════════════════════════════
 local_n = int(df["IsLocal"].sum())
@@ -803,11 +926,9 @@ def render_card(row):
     meta    = AIRLINE_META.get(carrier, {})
     cls = meta.get("cls", "card-swiss" if row.get("IsSwissport") else "card-intl")
     logo    = meta.get("logo","")
-    is_sgs_client = carrier is not None  # carrier موجود = الشركة ضمن عملاء SGS (LOCAL_AIRLINES)
+    is_sgs_client = is_sgs_affiliated(row, carrier)
     sgs_badge_html = (
-        f'<img src="{SGS_ICON_URI}" style="position:absolute;left:1.1rem;top:1.0rem;'
-        f'width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #008246;" '
-        f'title="SGS Client Airline" alt="SGS">'
+        f'<img src="{SGS_ICON_URI}" class="sgs-badge" title="SGS Client Airline" alt="SGS">'
         if is_sgs_client else ""
     )
     al_str  = row["Airlines"][:44]+("…" if len(row["Airlines"])>44 else "")
@@ -818,7 +939,14 @@ def render_card(row):
     # Portrait logos need different CSS class
     is_portrait = carrier in ("Saudia","Saudi Arabian Airlines")
     img_cls = "logo-portrait" if is_portrait else "logo-landscape"
-    logo_h  = f'''<div class="card-logo"><img src="{logo}" class="{img_cls}" alt=""></div>''' if logo else ""
+    if row.get("IsSwissport"):
+        # لا يوجد ملف شعار Swissport مضمّن بالتطبيق — نعرض بدلاً منه
+        # شارة نصية بهوية بصرية مطابقة (أحمر Swissport)
+        logo_h = '<div class="card-logo"><span class="swiss-badge">Swissport</span></div>'
+    elif logo:
+        logo_h = f'''<div class="card-logo"><img src="{logo}" class="{img_cls}" alt=""></div>'''
+    else:
+        logo_h = ""
     st.markdown(f"""
 <a class="news-card {cls}" href="{row['Link']}" target="_blank" rel="noopener noreferrer">
   {logo_h}
@@ -845,15 +973,15 @@ st.markdown(f'''<div class="sec-hdr">
 </div>''', unsafe_allow_html=True)
 
 if "Local Airlines 🇸🇦" in sel_cat and not df_local.empty:
-    st.markdown('<div><span class="cat-badge cat-local">🇸🇦 Local Airlines</span></div>', unsafe_allow_html=True)
+    st.markdown('<div id="sec-local"><span class="cat-badge cat-local">🇸🇦 Local Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_local.iterrows(): render_card(row)
 
 if "International ✈️" in sel_cat and not df_intl.empty:
-    st.markdown('<div><span class="cat-badge cat-intl">✈️ International Airlines</span></div>', unsafe_allow_html=True)
+    st.markdown('<div id="sec-intl"><span class="cat-badge cat-intl">✈️ International Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_intl.iterrows(): render_card(row)
 
 if "Swissport 🌐" in sel_cat and not df_swiss.empty:
-    st.markdown('<div><span class="cat-badge cat-swiss">🌐 Swissport</span></div>', unsafe_allow_html=True)
+    st.markdown('<div id="sec-swiss"><span class="cat-badge cat-swiss">🌐 Swissport</span></div>', unsafe_allow_html=True)
     for _, row in df_swiss.iterrows(): render_card(row)
 
 if total == 0:
