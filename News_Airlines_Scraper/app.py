@@ -222,6 +222,10 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   letter-spacing:0.8px;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin:1.4rem 0 0.8rem 0;}
 .cat-local{background:rgba(0,130,70,0.08);color:#006B38;border:1.5px solid rgba(0,130,70,0.2);}
 .cat-intl{background:rgba(37,99,235,0.08);color:#1D4ED8;border:1.5px solid rgba(37,99,235,0.2);}
+.cat-swiss{background:rgba(220,38,38,0.08);color:#B91C1C;border:1.5px solid rgba(220,38,38,0.2);}
+.card-swiss::before{background:#D6001C;}
+.card-swiss:hover{border-color:#D6001C!important;background:rgba(214,0,28,0.03)!important;box-shadow:0 8px 26px rgba(214,0,28,0.15)!important;}
+.card-swiss:active{background:rgba(214,0,28,0.1)!important;}
 .cat-all{background:rgba(8,145,178,0.08);color:#0E7490;border:1.5px solid rgba(8,145,178,0.2);}
 
 .news-card{background:#fff;border:1.5px solid #E4E8EE;border-radius:14px;
@@ -362,10 +366,11 @@ AIRLINE_META = {
     "Flynas":                 {"cls":"card-flynas",   "logo":FLYNAS_URI},
     "Flyadeal":               {"cls":"card-flyadeal", "logo":FLYADEAL_URI},
 }
+SWISSPORT_KW = {"Swissport"}
 
 AIRLINES_LIST = [
     "Aegean Airlines","Air Algerie","Air Arabia","Air Cairo","Air China","Air France",
-    "Air India","Air Mauritius","Almasria","Alpha Star","Azerbaijan Airlines",
+    "Swissport","Air India","Air Mauritius","Almasria","Alpha Star","Azerbaijan Airlines",
     "Badr Airlines","Biman Bangladesh","British Airways","Buraq Air",
     "Cebu Pacific","China Eastern","China Southern","Corendon Airlines",
     "Daallo Airlines","EasyJet","Egypt Air","Emirates","Ethiopian Airlines",
@@ -559,8 +564,9 @@ def fetch_news(days_back: int):
                 cat      = ("Operations / Infrastructure"
                             if any(w in full for w in OPS_WORDS)
                             else "Commercial / Fleet")
-                al_str   = ", ".join(airlines) if airlines else "General Aviation"
-                local    = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
+                al_str    = ", ".join(airlines) if airlines else "General Aviation"
+                local     = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
+                is_swiss  = "swissport" in full  # full-text match, not just airline-name match
                 region   = ("Saudi Arabia 🇸🇦" if is_ksa
                             else ("Middle East 🌍" if is_me
                             else "Global / Regional"))
@@ -574,6 +580,7 @@ def fetch_news(days_back: int):
                     "Region":  region,
                     "Type":    cat,
                     "IsLocal": local,
+                    "IsSwissport": is_swiss,   # ← New
                     "Source":  source_name,
                 })
 
@@ -615,9 +622,9 @@ with st.sidebar:
     st.session_state.days_back = days_back
     st.caption(f"Showing articles from last **{days_back} day{'s' if days_back>1 else ''}**")
 
-    st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
-    sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","International ✈️"],
-                             default=["Local Airlines 🇸🇦","International ✈️"],
+   st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
+    sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
+                             default=["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
                              label_visibility="collapsed")
     st.markdown('<div class="sb-lbl">Region</div>', unsafe_allow_html=True)
     # placeholders — will be filled after fetch
@@ -787,14 +794,22 @@ df_f = df[
     df["Type"].isin(sel_type) &
     df["Source"].isin(sel_src)
 ]
-df_local = df_f[df_f["IsLocal"]==True]
-df_intl  = df_f[df_f["IsLocal"]==False]
+df_swiss = df_f[df_f["IsSwissport"]==True]
+df_local = df_f[(df_f["IsLocal"]==True) & (df_f["IsSwissport"]==False)]
+df_intl  = df_f[(df_f["IsLocal"]==False) & (df_f["IsSwissport"]==False)]
 
 def render_card(row):
     carrier = detect_local(row["Airlines"])
     meta    = AIRLINE_META.get(carrier, {})
-    cls     = meta.get("cls","card-intl")
+    cls = meta.get("cls", "card-swiss" if row.get("IsSwissport") else "card-intl")
     logo    = meta.get("logo","")
+    is_sgs_client = carrier is not None  # carrier موجود = الشركة ضمن عملاء SGS (LOCAL_AIRLINES)
+    sgs_badge_html = (
+        f'<img src="{SGS_ICON_URI}" style="position:absolute;left:1.1rem;top:1.0rem;'
+        f'width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #008246;" '
+        f'title="SGS Client Airline" alt="SGS">'
+        if is_sgs_client else ""
+    )
     al_str  = row["Airlines"][:44]+("…" if len(row["Airlines"])>44 else "")
     rc_tag  = "t-ksa" if "Saudi" in row["Region"] else ("t-me" if "Middle" in row["Region"] else "t-glob")
     tc_tag  = "t-ops" if "Operations" in row["Type"] else "t-comm"
@@ -807,6 +822,7 @@ def render_card(row):
     st.markdown(f"""
 <a class="news-card {cls}" href="{row['Link']}" target="_blank" rel="noopener noreferrer">
   {logo_h}
+  {sgs_badge_html}
   <div class="card-title">{row['Title']}</div>
   <div class="card-summary">{summ}</div>
   <div class="card-meta">
@@ -818,7 +834,9 @@ def render_card(row):
   </div>
 </a>""", unsafe_allow_html=True)
 
-total = (len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0) +         (len(df_intl)  if "International ✈️"   in sel_cat else 0)
+total = (len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0) + \
+        (len(df_intl)  if "International ✈️"   in sel_cat else 0) + \
+        (len(df_swiss) if "Swissport 🌐"        in sel_cat else 0)
 
 st.markdown(f'''<div class="sec-hdr">
   <span class="sec-bar" style="background:#2563EB;"></span>
@@ -833,6 +851,10 @@ if "Local Airlines 🇸🇦" in sel_cat and not df_local.empty:
 if "International ✈️" in sel_cat and not df_intl.empty:
     st.markdown('<div><span class="cat-badge cat-intl">✈️ International Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_intl.iterrows(): render_card(row)
+
+if "Swissport 🌐" in sel_cat and not df_swiss.empty:
+    st.markdown('<div><span class="cat-badge cat-swiss">🌐 Swissport</span></div>', unsafe_allow_html=True)
+    for _, row in df_swiss.iterrows(): render_card(row)
 
 if total == 0:
     st.markdown(f'''
