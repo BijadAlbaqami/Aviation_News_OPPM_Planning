@@ -219,6 +219,14 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .card-swiss::before{background:#D6001C;}
 .card-swiss:hover{border-color:#D6001C!important;background:rgba(214,0,28,0.03)!important;box-shadow:0 8px 26px rgba(214,0,28,0.15)!important;}
 .card-swiss:active{background:rgba(214,0,28,0.1)!important;}
+.cat-airport{background:rgba(14,116,144,0.08);color:#0E7490;border:1.5px solid rgba(14,116,144,0.2);}
+.card-airport::before{background:#0E7490;}
+.card-airport:hover{border-color:#0E7490!important;background:rgba(14,116,144,0.03)!important;box-shadow:0 8px 26px rgba(14,116,144,0.15)!important;}
+.card-airport:active{background:rgba(14,116,144,0.1)!important;}
+.cat-gaca{background:rgba(109,40,217,0.08);color:#6D28D9;border:1.5px solid rgba(109,40,217,0.2);}
+.card-gaca::before{background:#6D28D9;}
+.card-gaca:hover{border-color:#6D28D9!important;background:rgba(109,40,217,0.03)!important;box-shadow:0 8px 26px rgba(109,40,217,0.15)!important;}
+.card-gaca:active{background:rgba(109,40,217,0.1)!important;}
 .cat-all{background:rgba(8,145,178,0.08);color:#0E7490;border:1.5px solid rgba(8,145,178,0.2);}
 
 /* ── Top quick-jump navigation: Local / Foreign / Swissport ── */
@@ -232,7 +240,7 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 }
 .cat-nav::before{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,#008246 0%,#2563EB 50%,#D6001C 100%);
+  background:linear-gradient(90deg,#008246 0%,#2563EB 25%,#0E7490 50%,#6D28D9 75%,#D6001C 100%);
 }
 .cat-nav-item{
   flex:1;display:flex;align-items:center;gap:0.65rem;
@@ -261,6 +269,16 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .cat-nav-intl .cat-nav-icon{background:rgba(37,99,235,0.1);}
 .cat-nav-intl:hover{background:rgba(37,99,235,0.07);}
 .cat-nav-intl:hover .cat-nav-icon{transform:scale(1.1) rotate(4deg);background:rgba(37,99,235,0.18);}
+
+.cat-nav-airport{color:#0E7490;}
+.cat-nav-airport .cat-nav-icon{background:rgba(14,116,144,0.1);}
+.cat-nav-airport:hover{background:rgba(14,116,144,0.07);}
+.cat-nav-airport:hover .cat-nav-icon{transform:scale(1.1) rotate(-4deg);background:rgba(14,116,144,0.18);}
+
+.cat-nav-gaca{color:#6D28D9;}
+.cat-nav-gaca .cat-nav-icon{background:rgba(109,40,217,0.1);}
+.cat-nav-gaca:hover{background:rgba(109,40,217,0.07);}
+.cat-nav-gaca:hover .cat-nav-icon{transform:scale(1.1) rotate(4deg);background:rgba(109,40,217,0.18);}
 
 .cat-nav-swiss{color:#B91C1C;}
 .cat-nav-swiss .cat-nav-icon{background:rgba(214,0,28,0.1);}
@@ -311,9 +329,7 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
    is a contracted SGS ground-handling client. Nested inside .card-logo
    so it inherits its desktop/mobile positioning automatically. */
 .sgs-badge{
-  width:34px;height:34px;border-radius:50%;
-  box-shadow:0 0 0 2px #fff,0 0 0 3px #008246;
-  background:#fff;padding:2px;object-fit:contain;
+  width:38px;height:38px;object-fit:contain;
 }
 /* Swissport wordmark chip — used in place of a logo image since no
    Swissport logo file is embedded in this app */
@@ -324,6 +340,26 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   font-size:0.72rem;letter-spacing:0.3px;
   padding:5px 12px;border-radius:6px;
   box-shadow:0 2px 6px rgba(214,0,28,0.22);
+  white-space:nowrap;
+}
+/* Saudi Airports / GACA wordmark chips — same visual language as
+   .swiss-badge, used in the card-logo slot for those two categories */
+.airport-badge{
+  display:inline-block;
+  background:#0E7490;color:#fff;
+  font-weight:800;font-style:italic;
+  font-size:0.72rem;letter-spacing:0.3px;
+  padding:5px 12px;border-radius:6px;
+  box-shadow:0 2px 6px rgba(14,116,144,0.25);
+  white-space:nowrap;
+}
+.gaca-badge{
+  display:inline-block;
+  background:#6D28D9;color:#fff;
+  font-weight:800;font-style:italic;
+  font-size:0.72rem;letter-spacing:0.3px;
+  padding:5px 12px;border-radius:6px;
+  box-shadow:0 2px 6px rgba(109,40,217,0.25);
   white-space:nowrap;
 }
 .card-title{font-size:0.92rem;font-weight:600;color:#111827;margin:0 0 0.5rem 0;line-height:1.45;padding-right:128px;}
@@ -394,7 +430,7 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
   /* SGS-partner marker now lives inside .card-logo, so on mobile it
      simply shrinks along with the logo slot — no overlap risk. */
   .sgs-badge{width:26px;height:26px;}
-  .swiss-badge{font-size:0.68rem;padding:4px 10px;}
+  .swiss-badge,.airport-badge,.gaca-badge{font-size:0.68rem;padding:4px 10px;}
 
   /* Tags wrap and shrink slightly */
   .tag{font-size:0.62rem;padding:2px 6px;}
@@ -477,11 +513,11 @@ def is_sgs_affiliated(row, carrier):
     """True إذا كان الخبر يخص ناقل عميل SGS (محلي، أو مذكور صراحة في
     SGS_PARTNER_AIRLINES، أو خبر دولي يقع ضمن نطاق السعودية حيث تشغّل
     SGS عمليات الأرضي في 27 مطار)."""
-    if row.get("IsSwissport", False):
+    if row.get("IsSwissport", False) or row.get("IsGACA", False) or row.get("IsSaudiAirport", False):
         return False
     if carrier is not None:
         return True
-    if any(a.lower() in row["Airlines"].lower() for a in SGS_PARTNER_AIRLINES):
+    if any(_term_in(a.lower(), row["Airlines"].lower()) for a in SGS_PARTNER_AIRLINES):
         return True
     return "Saudi Arabia" in row.get("Region", "")
 
@@ -575,6 +611,41 @@ AVIATION_KW_AR = [
     "طيران","طائرة","طائرات","مطار","مطارات","رحلة","رحلات","مدرج","أسطول",
     "طيار","شحن جوي","ركاب","مقصورة","صيانة الطائرات","خطوط جوية","ناقل",
     "ناقلة","مناولة أرضية","خدمات أرضية","إقلاع","هبوط","حجز طيران","تذاكر طيران",
+]
+
+# ── تصنيف "مطارات المملكة": كل مطارات السعودية بأسمائها الرسمية والشائعة ──
+SAUDI_AIRPORTS_KW = [
+    # جدة
+    "Jeddah Airport","King Abdulaziz International Airport","KAIA","JED airport",
+    "مطار جدة","مطار الملك عبدالعزيز",
+    # الرياض
+    "Riyadh Airport","King Khalid International Airport","KKIA","RUH airport",
+    "مطار الرياض","مطار الملك خالد",
+    # الدمام
+    "Dammam Airport","King Fahd International Airport","DMM airport",
+    "مطار الدمام","مطار الملك فهد",
+    # المدينة المنورة
+    "Madinah Airport","Medina Airport","Prince Mohammad Bin Abdulaziz Airport",
+    "مطار المدينة","مطار المدينة المنورة","مطار الأمير محمد بن عبدالعزيز",
+    # بقية مطارات المملكة
+    "Abha Airport","Taif Airport","Qassim Airport","Hail Airport","Najran Airport",
+    "Jazan Airport","Jizan Airport","King Abdullah Airport Jazan","Arar Airport",
+    "Wadi Dawasir Airport","Yanbu Airport","Tabuk Airport","AlUla Airport",
+    "NEOM Airport","NEOM Bay Airport","Red Sea International Airport",
+    "Gassim Airport","Turaif Airport","Al Jouf Airport","Sharurah Airport",
+    "Bisha Airport","Rafha Airport","Wajh Airport","Hafr Al Batin Airport",
+    "مطار أبها","مطار الطائف","مطار القصيم","مطار حائل","مطار نجران",
+    "مطار جازان","مطار جيزان","مطار عرعر","مطار وادي الدواسر","مطار ينبع",
+    "مطار تبوك","مطار العلا","مطار نيوم","مطار البحر الأحمر","مطار طريف",
+    "مطار الجوف","مطار شرورة","مطار بيشة","مطار رفحاء","مطار الوجه",
+    "مطار حفر الباطن","مطارات المملكة","مطارات سعودية","مطار سعودي",
+    "Saudi airports","Saudi Arabia airport",
+]
+
+# ── تصنيف "GACA": أخبار خاصة بالهيئة العامة للطيران المدني تحديداً ──
+GACA_KW = [
+    "GACA","General Authority of Civil Aviation","Saudi Civil Aviation Authority",
+    "الهيئة العامة للطيران المدني","هيئة الطيران المدني",
 ]
 
 # خرائط أسماء شركات الطيران بالعربي → الاسم الإنجليزي المطابق في AIRLINES_LIST
@@ -679,9 +750,18 @@ def clean_html(text):
     text = re.sub(r'<[^>]+>', ' ', text or '')
     return re.sub(r'\s+', ' ', text).strip()
 
+def _term_in(term, text):
+    """Word-boundary-aware substring check.
+    Plain `in` checks cause false positives — e.g. 'Riyadh Air' (the
+    airline) matching inside 'Riyadh Airport' (the airport), since
+    'Riyadh Air' is literally a substring of 'Riyadh Airport'. \\b
+    requires a non-word character (space/punctuation/string edge) on
+    each side, which fixes that while still matching normal mentions."""
+    return re.search(r'\b' + re.escape(term) + r'\b', text) is not None
+
 def detect_local(airlines_str):
     for a in LOCAL_AIRLINES:
-        if a.lower() in airlines_str.lower():
+        if _term_in(a.lower(), airlines_str.lower()):
             return a
     return None
 
@@ -762,9 +842,9 @@ def fetch_news(days_back: int):
                 if not is_relevant(full):
                     continue
 
-                airlines = [a for a in AIRLINES_LIST if a.lower() in full]
+                airlines = [a for a in AIRLINES_LIST if _term_in(a.lower(), full)]
                 for ar_name, en_name in AIRLINE_NAME_MAP_AR.items():
-                    if ar_name in full and en_name not in airlines:
+                    if _term_in(ar_name, full) and en_name not in airlines:
                         airlines.append(en_name)
                 is_ksa   = any(k.lower() in full for k in KSA_KW) or any(k in full for k in KSA_KW_AR)
                 is_me    = any(k.lower() in full for k in ME_KW) or any(k in full for k in ME_KW_AR)
@@ -772,8 +852,14 @@ def fetch_news(days_back: int):
                             if any(w in full for w in OPS_WORDS) or any(w in full for w in OPS_WORDS_AR)
                             else "Commercial / Fleet")
                 al_str    = ", ".join(airlines) if airlines else "General Aviation"
-                local     = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
+                local     = any(_term_in(la.lower(), al_str.lower()) for la in LOCAL_AIRLINES)
                 is_swiss  = "swissport" in full  # full-text match, not just airline-name match
+                # خبر يخص مطارًا سعوديًا بالتحديد (وليس Swissport) — Riyadh Air لا
+                # يفعّل هذا التصنيف لأن المطابقة هنا على أسماء المطارات فقط، منفصلة
+                # تمامًا عن أسماء شركات الطيران (الإصلاح أعلاه يمنع أي تداخل بينهما)
+                is_airport = any(_term_in(k.lower(), full) for k in SAUDI_AIRPORTS_KW)
+                # خبر يخص هيئة الطيران المدني (GACA) تحديداً
+                is_gaca    = any(_term_in(k.lower(), full) for k in GACA_KW)
                 region   = ("Saudi Arabia 🇸🇦" if is_ksa
                             else ("Middle East 🌍" if is_me
                             else "Global / Regional"))
@@ -787,7 +873,9 @@ def fetch_news(days_back: int):
                     "Region":  region,
                     "Type":    cat,
                     "IsLocal": local,
-                    "IsSwissport": is_swiss,   # ← New
+                    "IsSwissport": is_swiss,
+                    "IsGACA": is_gaca,             # ← New
+                    "IsSaudiAirport": is_airport,  # ← New
                     "Source":  source_name,
                 })
 
@@ -830,9 +918,8 @@ with st.sidebar:
     st.caption(f"Showing articles from last **{days_back} day{'s' if days_back>1 else ''}**")
 
     st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
-    sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","Foreign Airlines ✈️","Swissport 🌐"],
-                             default=["Local Airlines 🇸🇦","Foreign Airlines ✈️","Swissport 🌐"],
-                             label_visibility="collapsed")
+    ALL_CATS = ["Local Airlines 🇸🇦","Foreign Airlines ✈️","Saudi Airports 🛫","GACA 🏛️","Swissport 🌐"]
+    sel_cat = st.multiselect("", ALL_CATS, default=ALL_CATS, label_visibility="collapsed")
     st.markdown('<div class="sb-lbl">Region</div>', unsafe_allow_html=True)
     # placeholders — will be filled after fetch
     region_ph = st.empty()
@@ -869,17 +956,20 @@ else:
     sel_region = sel_type = sel_src = []
 
 # Pre-split by category (needed early for nav-bar live counts, and later for the feed)
+# Priority order (mutually exclusive): Swissport > GACA > Saudi Airports > Local > Foreign
 if is_live:
     df_f = df[
         df["Region"].isin(sel_region) &
         df["Type"].isin(sel_type) &
         df["Source"].isin(sel_src)
     ]
-    df_swiss = df_f[df_f["IsSwissport"]==True]
-    df_local = df_f[(df_f["IsLocal"]==True) & (df_f["IsSwissport"]==False)]
-    df_intl  = df_f[(df_f["IsLocal"]==False) & (df_f["IsSwissport"]==False)]
+    df_swiss   = df_f[df_f["IsSwissport"]==True]
+    df_gaca    = df_f[(df_f["IsSwissport"]==False) & (df_f["IsGACA"]==True)]
+    df_airport = df_f[(df_f["IsSwissport"]==False) & (df_f["IsGACA"]==False) & (df_f["IsSaudiAirport"]==True)]
+    df_local   = df_f[(df_f["IsSwissport"]==False) & (df_f["IsGACA"]==False) & (df_f["IsSaudiAirport"]==False) & (df_f["IsLocal"]==True)]
+    df_intl    = df_f[(df_f["IsSwissport"]==False) & (df_f["IsGACA"]==False) & (df_f["IsSaudiAirport"]==False) & (df_f["IsLocal"]==False)]
 else:
-    df_f = df_swiss = df_local = df_intl = df
+    df_f = df_swiss = df_gaca = df_airport = df_local = df_intl = df
 
 with st.sidebar:
     st.markdown("---")
@@ -925,14 +1015,18 @@ if not is_live:
 
 # ════════════════════════════════════════════
 # QUICK COUNTS (used by both the nav bar and KPI cards)
+# Derived from the sidebar-filtered, priority-split dataframes above so
+# the nav/KPI numbers always match what's actually shown in the feed.
 # ════════════════════════════════════════════
-swiss_n  = int(df["IsSwissport"].sum())
-local_n  = int((df["IsLocal"] & ~df["IsSwissport"]).sum())
-foreign_n = len(df) - local_n - swiss_n
-src_n    = df["Source"].nunique()
+swiss_n   = len(df_swiss)
+gaca_n    = len(df_gaca)
+airport_n = len(df_airport)
+local_n   = len(df_local)
+foreign_n = len(df_intl)
+src_n     = df["Source"].nunique()
 
 # ════════════════════════════════════════════
-# CATEGORY QUICK-JUMP NAV (Local / Foreign / Swissport)
+# CATEGORY QUICK-JUMP NAV (Local / Foreign / Saudi Airports / GACA / Swissport)
 # ════════════════════════════════════════════
 st.markdown(f"""
 <nav class="cat-nav">
@@ -949,6 +1043,22 @@ st.markdown(f"""
     <span class="cat-nav-text">
       <span class="cat-nav-title">Foreign Airlines</span>
       <span class="cat-nav-count">{foreign_n} articles</span>
+    </span>
+  </a>
+  <span class="cat-nav-sep"></span>
+  <a href="#sec-airport" class="cat-nav-item cat-nav-airport">
+    <span class="cat-nav-icon">🛫</span>
+    <span class="cat-nav-text">
+      <span class="cat-nav-title">Saudi Airports</span>
+      <span class="cat-nav-count">{airport_n} articles</span>
+    </span>
+  </a>
+  <span class="cat-nav-sep"></span>
+  <a href="#sec-gaca" class="cat-nav-item cat-nav-gaca">
+    <span class="cat-nav-icon">🏛️</span>
+    <span class="cat-nav-text">
+      <span class="cat-nav-title">GACA</span>
+      <span class="cat-nav-count">{gaca_n} articles</span>
     </span>
   </a>
   <span class="cat-nav-sep"></span>
@@ -1046,7 +1156,6 @@ with c3:
 def render_card(row):
     carrier = detect_local(row["Airlines"])
     meta    = AIRLINE_META.get(carrier, {})
-    cls = meta.get("cls", "card-swiss" if row.get("IsSwissport") else "card-intl")
     logo    = meta.get("logo","")
     al_str  = row["Airlines"][:44]+("…" if len(row["Airlines"])>44 else "")
     rc_tag  = "t-ksa" if "Saudi" in row["Region"] else ("t-me" if "Middle" in row["Region"] else "t-glob")
@@ -1056,19 +1165,30 @@ def render_card(row):
     # Portrait logos need different CSS class
     is_portrait = carrier in ("Saudia","Saudi Arabian Airlines")
     img_cls = "logo-portrait" if is_portrait else "logo-landscape"
+    # ترتيب الأولوية (يطابق تقسيم الأقسام بالأعلى): Swissport > GACA > مطارات السعودية > محلي > دولي
     if row.get("IsSwissport"):
         # لا يوجد ملف شعار Swissport مضمّن بالتطبيق — نعرض بدلاً منه
         # شارة نصية بهوية بصرية مطابقة (أحمر Swissport)
+        cls    = "card-swiss"
         logo_h = '<div class="card-logo"><span class="swiss-badge">Swissport</span></div>'
+    elif row.get("IsGACA"):
+        cls    = "card-gaca"
+        logo_h = '<div class="card-logo"><span class="gaca-badge">GACA</span></div>'
+    elif row.get("IsSaudiAirport"):
+        cls    = "card-airport"
+        logo_h = '<div class="card-logo"><span class="airport-badge">Saudi Airports</span></div>'
     elif logo:
         # ناقل محلي له شعاره الرسمي — الناقلات المحلية كلها أصلاً عملاء
         # SGS مباشرين فما تحتاج وسم إضافي
+        cls    = meta.get("cls", "card-intl")
         logo_h = f'''<div class="card-logo"><img src="{logo}" class="{img_cls}" alt=""></div>'''
     elif carrier is None and is_sgs_affiliated(row, carrier):
         # خبر دولي (Foreign) لشركة طيران متعاقدة مع SGS — يوسم بشعار SGS
         # في الزاوية العلوية اليمنى للكرت (نفس مكان شعارات الناقلات المحلية)
+        cls    = "card-intl"
         logo_h = f'<div class="card-logo"><img src="{SGS_ICON_URI}" class="sgs-badge" title="SGS Partner Airline" alt="SGS"></div>'
     else:
+        cls    = "card-intl"
         logo_h = ""
     st.markdown(f"""
 <a class="news-card {cls}" href="{row['Link']}" target="_blank" rel="noopener noreferrer">
@@ -1086,6 +1206,8 @@ def render_card(row):
 
 total = (len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0) + \
         (len(df_intl)  if "Foreign Airlines ✈️" in sel_cat else 0) + \
+        (len(df_airport) if "Saudi Airports 🛫"  in sel_cat else 0) + \
+        (len(df_gaca)  if "GACA 🏛️"             in sel_cat else 0) + \
         (len(df_swiss) if "Swissport 🌐"        in sel_cat else 0)
 
 st.markdown(f'''<div class="sec-hdr">
@@ -1101,6 +1223,14 @@ if "Local Airlines 🇸🇦" in sel_cat and not df_local.empty:
 if "Foreign Airlines ✈️" in sel_cat and not df_intl.empty:
     st.markdown('<div id="sec-intl"><span class="cat-badge cat-intl">✈️ Foreign Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_intl.iterrows(): render_card(row)
+
+if "Saudi Airports 🛫" in sel_cat and not df_airport.empty:
+    st.markdown('<div id="sec-airport"><span class="cat-badge cat-airport">🛫 Saudi Airports</span></div>', unsafe_allow_html=True)
+    for _, row in df_airport.iterrows(): render_card(row)
+
+if "GACA 🏛️" in sel_cat and not df_gaca.empty:
+    st.markdown('<div id="sec-gaca"><span class="cat-badge cat-gaca">🏛️ GACA</span></div>', unsafe_allow_html=True)
+    for _, row in df_gaca.iterrows(): render_card(row)
 
 if "Swissport 🌐" in sel_cat and not df_swiss.empty:
     st.markdown('<div id="sec-swiss"><span class="cat-badge cat-swiss">🌐 Swissport</span></div>', unsafe_allow_html=True)
