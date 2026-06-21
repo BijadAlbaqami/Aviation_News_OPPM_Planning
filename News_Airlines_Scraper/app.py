@@ -196,6 +196,7 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .kpi-card.g::before{background:linear-gradient(90deg,#008246,#00B46A);}
 .kpi-card.b::before{background:linear-gradient(90deg,#2563EB,#60A5FA);}
 .kpi-card.a::before{background:linear-gradient(90deg,#D97706,#FBBF24);}
+.kpi-card.r::before{background:linear-gradient(90deg,#D6001C,#F87171);}
 .kpi-card.t::before{background:linear-gradient(90deg,#0891B2,#22D3EE);}
 .kpi-label{
   font-size:0.67rem;font-weight:700;letter-spacing:0.7px;text-transform:uppercase;
@@ -220,29 +221,51 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
 .card-swiss:active{background:rgba(214,0,28,0.1)!important;}
 .cat-all{background:rgba(8,145,178,0.08);color:#0E7490;border:1.5px solid rgba(8,145,178,0.2);}
 
-/* ── Top quick-jump navigation: Local / International / Swissport ── */
+/* ── Top quick-jump navigation: Local / Foreign / Swissport ── */
 .cat-nav{
-  background:#fff;border:1px solid #E4E8EE;border-radius:14px;
-  display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;
-  padding:0.7rem 1rem;
+  background:#fff;border:1px solid #E4E8EE;border-radius:18px;
+  display:flex;align-items:stretch;justify-content:space-between;gap:0.2rem;
+  padding:0.4rem;
   margin:1.1rem 0 0 0;
-  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  box-shadow:0 4px 18px rgba(0,0,0,0.05);
+  position:relative;overflow:hidden;
 }
-.cat-nav-pill{
-  display:inline-flex;align-items:center;gap:0.4rem;
-  font-size:0.78rem;font-weight:700;
-  padding:7px 18px;border-radius:24px;
+.cat-nav::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#008246 0%,#2563EB 50%,#D6001C 100%);
+}
+.cat-nav-item{
+  flex:1;display:flex;align-items:center;gap:0.65rem;
+  padding:0.65rem 1rem;border-radius:13px;
   text-decoration:none!important;
-  border:1.5px solid transparent;
-  transition:all 0.18s ease;
-  cursor:pointer;scroll-behavior:smooth;
+  transition:all 0.22s cubic-bezier(.4,0,.2,1);
+  position:relative;min-width:0;
 }
-.cat-nav-local{background:rgba(0,130,70,0.08);color:#006B38;border-color:rgba(0,130,70,0.22);}
-.cat-nav-local:hover{background:rgba(0,130,70,0.16);transform:translateY(-1px);}
-.cat-nav-intl{background:rgba(37,99,235,0.08);color:#1D4ED8;border-color:rgba(37,99,235,0.22);}
-.cat-nav-intl:hover{background:rgba(37,99,235,0.16);transform:translateY(-1px);}
-.cat-nav-swiss{background:rgba(214,0,28,0.08);color:#B91C1C;border-color:rgba(214,0,28,0.22);}
-.cat-nav-swiss:hover{background:rgba(214,0,28,0.16);transform:translateY(-1px);}
+.cat-nav-icon{
+  font-size:1.2rem;width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:rgba(0,0,0,0.04);
+  transition:transform 0.22s ease,background 0.22s ease;
+}
+.cat-nav-text{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.cat-nav-title{font-size:0.8rem;font-weight:700;line-height:1.2;white-space:nowrap;}
+.cat-nav-count{font-size:0.66rem;font-weight:600;opacity:0.6;line-height:1.2;white-space:nowrap;}
+.cat-nav-sep{width:1px;background:#EDF0F4;margin:0.45rem 0.1rem;flex-shrink:0;}
+
+.cat-nav-local{color:#006B38;}
+.cat-nav-local .cat-nav-icon{background:rgba(0,130,70,0.1);}
+.cat-nav-local:hover{background:rgba(0,130,70,0.07);}
+.cat-nav-local:hover .cat-nav-icon{transform:scale(1.1) rotate(-4deg);background:rgba(0,130,70,0.18);}
+
+.cat-nav-intl{color:#1D4ED8;}
+.cat-nav-intl .cat-nav-icon{background:rgba(37,99,235,0.1);}
+.cat-nav-intl:hover{background:rgba(37,99,235,0.07);}
+.cat-nav-intl:hover .cat-nav-icon{transform:scale(1.1) rotate(4deg);background:rgba(37,99,235,0.18);}
+
+.cat-nav-swiss{color:#B91C1C;}
+.cat-nav-swiss .cat-nav-icon{background:rgba(214,0,28,0.1);}
+.cat-nav-swiss:hover{background:rgba(214,0,28,0.07);}
+.cat-nav-swiss:hover .cat-nav-icon{transform:scale(1.1) rotate(-4deg);background:rgba(214,0,28,0.18);}
 
 .news-card{background:#fff;border:1.5px solid #E4E8EE;border-radius:14px;
   padding:1.2rem 1.4rem 1rem 1.4rem;margin-bottom:0.8rem;cursor:pointer;
@@ -283,12 +306,14 @@ li[role="option"]:hover{ background:#F4F6F9!important; }
   max-width:54px;max-height:68px;
   width:auto;height:auto;object-fit:contain;
 }
-/* Small circular SGS-client marker (top-left) — shown when the article's
-   airline is a contracted SGS ground-handling client */
+/* SGS-partner marker — shown inside the card-logo slot (top-right,
+   same spot as airline logos) for Foreign Airlines news whose carrier
+   is a contracted SGS ground-handling client. Nested inside .card-logo
+   so it inherits its desktop/mobile positioning automatically. */
 .sgs-badge{
-  position:absolute;left:1.1rem;top:1.0rem;
-  width:22px;height:22px;border-radius:50%;
+  width:34px;height:34px;border-radius:50%;
   box-shadow:0 0 0 2px #fff,0 0 0 3px #008246;
+  background:#fff;padding:2px;object-fit:contain;
 }
 /* Swissport wordmark chip — used in place of a logo image since no
    Swissport logo file is embedded in this app */
@@ -366,17 +391,9 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
   .card-title{padding-right:0;font-size:0.88rem;}
   .card-summary{font-size:0.78rem;}
 
-  /* SGS-client marker: no longer absolute (was overlapping the airline
-     logo once .card-logo becomes static on mobile) — now flows inline
-     as a small ringed dot right after the logo, no overlap. */
-  .sgs-badge{
-    position:static;
-    display:inline-block;
-    width:16px;height:16px;
-    margin:0 0 0.5rem 0;
-    box-shadow:0 0 0 2px #fff,0 0 0 2px #008246;
-    vertical-align:middle;
-  }
+  /* SGS-partner marker now lives inside .card-logo, so on mobile it
+     simply shrinks along with the logo slot — no overlap risk. */
+  .sgs-badge{width:26px;height:26px;}
   .swiss-badge{font-size:0.68rem;padding:4px 10px;}
 
   /* Tags wrap and shrink slightly */
@@ -385,8 +402,13 @@ hr{border-color:#EDF0F4!important;margin:1.25rem 0!important;}
 
   /* Cat badges */
   .cat-badge{font-size:0.64rem;padding:4px 11px;}
-  .cat-nav{gap:0.4rem;padding:0.6rem 0.7rem;}
-  .cat-nav-pill{font-size:0.7rem;padding:6px 13px;}
+  .cat-nav{flex-wrap:wrap;gap:0.35rem;padding:0.45rem;}
+  .cat-nav-sep{display:none;}
+  .cat-nav-item{flex:1 1 28%;flex-direction:column;justify-content:center;
+    text-align:center;gap:0.3rem;padding:0.55rem 0.4rem;}
+  .cat-nav-icon{width:32px;height:32px;font-size:1.05rem;}
+  .cat-nav-title{font-size:0.66rem;white-space:normal;}
+  .cat-nav-count{font-size:0.58rem;}
 }
 
 /* Very small phones */
@@ -530,6 +552,64 @@ OPS_WORDS = [
     "baggage","check-in","boarding","lounge","departure","arrival","MRO",
     "infrastructure","disruption","cancellation","diversion",
 ]
+OPS_WORDS_AR = [
+    "تأخير","إضراب","صيانة","وقود","مجال جوي","مسار","مناولة أرضية","سعة",
+    "صالة","حقائب","تسجيل وصول","صعود الركاب","مغادرة","وصول","اضطراب",
+    "إلغاء","تحويل مسار","مدرج",
+]
+
+# ── مصادر عربية: قوائم الكلمات المفتاحية بالعربي (نفس منطق KSA_KW/ME_KW/AVIATION_KW) ──
+KSA_KW_AR = [
+    "السعودية","السعودي","المملكة","الرياض","جدة","الدمام","مكة","المدينة المنورة",
+    "نيوم","البحر الأحمر","الهيئة العامة للطيران المدني","هيئة الطيران المدني",
+    "الحج","العمرة","مطار الملك عبدالعزيز","مطار الملك خالد","مطار الملك فهد",
+    "تبوك","ينبع","أبها","الطائف","القصيم","حائل","نجران","جازان","جيزان","عرعر",
+    "وادي الدواسر","رؤية 2030","الخدمات الأرضية السعودية",
+]
+ME_KW_AR = [
+    "الشرق الأوسط","الخليج","دبي","الدوحة","أبوظبي","القاهرة","عمّان","عمان",
+    "الكويت","البحرين","الأردن","بيروت","بغداد","طهران","مسقط","الشارقة",
+    "رأس الخيمة","الإمارات","عربي","عربية",
+]
+AVIATION_KW_AR = [
+    "طيران","طائرة","طائرات","مطار","مطارات","رحلة","رحلات","مدرج","أسطول",
+    "طيار","شحن جوي","ركاب","مقصورة","صيانة الطائرات","خطوط جوية","ناقل",
+    "ناقلة","مناولة أرضية","خدمات أرضية","إقلاع","هبوط","حجز طيران","تذاكر طيران",
+]
+
+# خرائط أسماء شركات الطيران بالعربي → الاسم الإنجليزي المطابق في AIRLINES_LIST
+# (يُستخدم لاكتشاف الناقل حتى لو ورد اسمه بالعربي فقط في المصدر)
+AIRLINE_NAME_MAP_AR = {
+    "السعودية للطيران": "Saudia", "الخطوط السعودية": "Saudia", "الخطوط الجوية السعودية": "Saudia",
+    "طيران الرياض": "Riyadh Air",
+    "طيران ناس": "Flynas", "فلاي ناس": "Flynas",
+    "طيران أديل": "Flyadeal", "فلاي أديل": "Flyadeal",
+    "طيران الإمارات": "Emirates Airlines",
+    "الاتحاد للطيران": "Etihad Airways",
+    "طيران الخليج": "Gulf Air",
+    "الخطوط القطرية": "Qatar Airways", "القطرية": "Qatar Airways",
+    "طيران الكويت": "Kuwait Airways", "الخطوط الكويتية": "Kuwait Airways",
+    "العمانية للطيران": "Oman Air", "الطيران العماني": "Oman Air",
+    "مصر للطيران": "Egypt Air",
+    "إير كايرو": "Air Cairo", "ايركايرو": "Air Cairo",
+    "النيل للطيران": "Nile Air",
+    "فلاي إيجبت": "FlyEgypt",
+    "سودانير": "Sudan Airways", "الخطوط السودانية": "Sudan Airways",
+    "الخطوط العراقية": "Iraqi Airways",
+    "السورية للطيران": "Syrian Airlines", "الخطوط السورية": "Syrian Airlines",
+    "طيران الجزيرة": "Jazeera Airways",
+    "فلاي دبي": "Flydubai",
+    "الخطوط التركية": "Turkish Airlines",
+    "الخطوط الملكية المغربية": "Royal Air Maroc",
+    "بريطش إيرويز": "British Airways PLC",
+    "اللوفتهانزا": "Lufthansa", "لوفتهانزا": "Lufthansa",
+    "طيران البحر الأحمر": "Red Sea Airlines",
+    "طيران ألفا ستار": "Alpha Star Aviation",
+    "ركبان للطيران": "RED C Aviation",
+    "طيران بوراك": "Buraq Air",
+    "الخطوط الليبية": "Libyan Airlines",
+    "طيران اليمنية": "Yemenia-Yemen Airways", "اليمنية": "Yemenia-Yemen Airways",
+}
 
 # ── Expanded RSS source list ─────────────────
 # Multiple pages per source = more historical depth
@@ -573,6 +653,12 @@ RSS_FEEDS = [
     ("Zawya",                 "https://www.zawya.com/en/rss/feed?section=transport"),
     # ch-aviation
     ("ch-aviation",           "https://www.ch-aviation.com/portal/news/rss"),
+    # ── مصادر عربية متخصصة بالطيران ──────────────────────────
+    # ترانزيت: موقع إخباري عربي متخصص حصراً بالطيران والشحن الجوي وخدمات المطارات
+    ("ترانزيت",               "https://tranzit.news/feed/"),
+    ("ترانزيت - شركات طيران", "https://tranzit.news/category/%d8%b4%d8%b1%d9%83%d8%a7%d8%aa-%d8%b7%d9%8a%d8%b1%d8%a7%d9%86/feed/"),
+    # أرقام: أخبار السوق السعودي (تداول) — تغطي الشركات المدرجة كطيران ناس والخدمات الأرضية
+    ("أرقام",                 "https://www.argaam.com/ar/rss/ho-main-news?sectionid=1523"),
 ]
 
 # ════════════════════════════════════════════
@@ -608,8 +694,14 @@ def is_relevant(full_lower):
     has_ksa      = any(k.lower() in full_lower for k in KSA_KW)
     has_me       = any(k.lower() in full_lower for k in ME_KW)
     has_aviation = any(k.lower() in full_lower for k in AVIATION_KW)
-    # Include if: (any airline OR KSA OR ME) AND has aviation keyword
-    return (has_airline or has_ksa or has_me) and has_aviation
+    # المصادر العربية: نفس المنطق لكن بكلمات عربية (لا حاجة لـ .lower())
+    has_airline_ar  = any(a in full_lower for a in AIRLINE_NAME_MAP_AR)
+    has_ksa_ar      = any(k in full_lower for k in KSA_KW_AR)
+    has_me_ar       = any(k in full_lower for k in ME_KW_AR)
+    has_aviation_ar = any(k in full_lower for k in AVIATION_KW_AR)
+    # Include if: (any airline OR KSA OR ME) AND has aviation keyword — بالإنجليزي أو العربي
+    return ((has_airline or has_ksa or has_me) and has_aviation) or \
+           ((has_airline_ar or has_ksa_ar or has_me_ar) and has_aviation_ar)
 
 # ════════════════════════════════════════════
 # FETCH
@@ -671,10 +763,13 @@ def fetch_news(days_back: int):
                     continue
 
                 airlines = [a for a in AIRLINES_LIST if a.lower() in full]
-                is_ksa   = any(k.lower() in full for k in KSA_KW)
-                is_me    = any(k.lower() in full for k in ME_KW)
+                for ar_name, en_name in AIRLINE_NAME_MAP_AR.items():
+                    if ar_name in full and en_name not in airlines:
+                        airlines.append(en_name)
+                is_ksa   = any(k.lower() in full for k in KSA_KW) or any(k in full for k in KSA_KW_AR)
+                is_me    = any(k.lower() in full for k in ME_KW) or any(k in full for k in ME_KW_AR)
                 cat      = ("Operations / Infrastructure"
-                            if any(w in full for w in OPS_WORDS)
+                            if any(w in full for w in OPS_WORDS) or any(w in full for w in OPS_WORDS_AR)
                             else "Commercial / Fleet")
                 al_str    = ", ".join(airlines) if airlines else "General Aviation"
                 local     = any(la.lower() in al_str.lower() for la in LOCAL_AIRLINES)
@@ -735,8 +830,8 @@ with st.sidebar:
     st.caption(f"Showing articles from last **{days_back} day{'s' if days_back>1 else ''}**")
 
     st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
-    sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
-                             default=["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
+    sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","Foreign Airlines ✈️","Swissport 🌐"],
+                             default=["Local Airlines 🇸🇦","Foreign Airlines ✈️","Swissport 🌐"],
                              label_visibility="collapsed")
     st.markdown('<div class="sb-lbl">Region</div>', unsafe_allow_html=True)
     # placeholders — will be filled after fetch
@@ -772,6 +867,19 @@ if is_live:
                                     key="src_filter")
 else:
     sel_region = sel_type = sel_src = []
+
+# Pre-split by category (needed early for nav-bar live counts, and later for the feed)
+if is_live:
+    df_f = df[
+        df["Region"].isin(sel_region) &
+        df["Type"].isin(sel_type) &
+        df["Source"].isin(sel_src)
+    ]
+    df_swiss = df_f[df_f["IsSwissport"]==True]
+    df_local = df_f[(df_f["IsLocal"]==True) & (df_f["IsSwissport"]==False)]
+    df_intl  = df_f[(df_f["IsLocal"]==False) & (df_f["IsSwissport"]==False)]
+else:
+    df_f = df_swiss = df_local = df_intl = df
 
 with st.sidebar:
     st.markdown("---")
@@ -816,31 +924,54 @@ if not is_live:
     st.stop()
 
 # ════════════════════════════════════════════
-# CATEGORY QUICK-JUMP NAV (Local / International / Swissport)
+# QUICK COUNTS (used by both the nav bar and KPI cards)
 # ════════════════════════════════════════════
-st.markdown("""
+swiss_n  = int(df["IsSwissport"].sum())
+local_n  = int((df["IsLocal"] & ~df["IsSwissport"]).sum())
+foreign_n = len(df) - local_n - swiss_n
+src_n    = df["Source"].nunique()
+
+# ════════════════════════════════════════════
+# CATEGORY QUICK-JUMP NAV (Local / Foreign / Swissport)
+# ════════════════════════════════════════════
+st.markdown(f"""
 <nav class="cat-nav">
-  <a href="#sec-local" class="cat-nav-pill cat-nav-local">🇸🇦 Local Airlines</a>
-  <a href="#sec-intl" class="cat-nav-pill cat-nav-intl">✈️ International Airlines</a>
-  <a href="#sec-swiss" class="cat-nav-pill cat-nav-swiss">🌐 Swissport</a>
+  <a href="#sec-local" class="cat-nav-item cat-nav-local">
+    <span class="cat-nav-icon">🇸🇦</span>
+    <span class="cat-nav-text">
+      <span class="cat-nav-title">Local Airlines</span>
+      <span class="cat-nav-count">{local_n} articles</span>
+    </span>
+  </a>
+  <span class="cat-nav-sep"></span>
+  <a href="#sec-intl" class="cat-nav-item cat-nav-intl">
+    <span class="cat-nav-icon">✈️</span>
+    <span class="cat-nav-text">
+      <span class="cat-nav-title">Foreign Airlines</span>
+      <span class="cat-nav-count">{foreign_n} articles</span>
+    </span>
+  </a>
+  <span class="cat-nav-sep"></span>
+  <a href="#sec-swiss" class="cat-nav-item cat-nav-swiss">
+    <span class="cat-nav-icon">🌐</span>
+    <span class="cat-nav-text">
+      <span class="cat-nav-title">Swissport</span>
+      <span class="cat-nav-count">{swiss_n} articles</span>
+    </span>
+  </a>
 </nav>
 """, unsafe_allow_html=True)
 
 # ════════════════════════════════════════════
 # KPI
 # ════════════════════════════════════════════
-local_n = int(df["IsLocal"].sum())
-intl_n  = len(df) - local_n
-ops_n   = len(df[df["Type"]=="Operations / Infrastructure"])
-src_n   = df["Source"].nunique()
-
 st.markdown(f"""
 <div class="kpi-grid">
-  <div class="kpi-card g"><div class="kpi-icon">📋</div><div class="kpi-label">Total Articles</div><div class="kpi-value">{len(df)}</div></div>
-  <div class="kpi-card g"><div class="kpi-icon">🇸🇦</div><div class="kpi-label">Local Airlines</div><div class="kpi-value">{local_n}</div></div>
-  <div class="kpi-card b"><div class="kpi-icon">✈️</div><div class="kpi-label">International</div><div class="kpi-value">{intl_n}</div></div>
-  <div class="kpi-card a"><div class="kpi-icon">⚙️</div><div class="kpi-label">Ops / Infra</div><div class="kpi-value">{ops_n}</div></div>
-  <div class="kpi-card t"><div class="kpi-icon">📡</div><div class="kpi-label">Active Sources</div><div class="kpi-value">{src_n}</div></div>
+  <div class="kpi-card g"><div class="kpi-icon">📋</div><div class="kpi-label">Total News</div><div class="kpi-value">{len(df)}</div></div>
+  <div class="kpi-card g"><div class="kpi-icon">🇸🇦</div><div class="kpi-label">Local News</div><div class="kpi-value">{local_n}</div></div>
+  <div class="kpi-card b"><div class="kpi-icon">✈️</div><div class="kpi-label">Foreign News</div><div class="kpi-value">{foreign_n}</div></div>
+  <div class="kpi-card r"><div class="kpi-icon">🌐</div><div class="kpi-label">Swissport News</div><div class="kpi-value">{swiss_n}</div></div>
+  <div class="kpi-card t"><div class="kpi-icon">📡</div><div class="kpi-label">Active Source</div><div class="kpi-value">{src_n}</div></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -912,25 +1043,11 @@ with c3:
 # ════════════════════════════════════════════
 # FILTER + FEED
 # ════════════════════════════════════════════
-df_f = df[
-    df["Region"].isin(sel_region) &
-    df["Type"].isin(sel_type) &
-    df["Source"].isin(sel_src)
-]
-df_swiss = df_f[df_f["IsSwissport"]==True]
-df_local = df_f[(df_f["IsLocal"]==True) & (df_f["IsSwissport"]==False)]
-df_intl  = df_f[(df_f["IsLocal"]==False) & (df_f["IsSwissport"]==False)]
-
 def render_card(row):
     carrier = detect_local(row["Airlines"])
     meta    = AIRLINE_META.get(carrier, {})
     cls = meta.get("cls", "card-swiss" if row.get("IsSwissport") else "card-intl")
     logo    = meta.get("logo","")
-    is_sgs_client = is_sgs_affiliated(row, carrier)
-    sgs_badge_html = (
-        f'<img src="{SGS_ICON_URI}" class="sgs-badge" title="SGS Client Airline" alt="SGS">'
-        if is_sgs_client else ""
-    )
     al_str  = row["Airlines"][:44]+("…" if len(row["Airlines"])>44 else "")
     rc_tag  = "t-ksa" if "Saudi" in row["Region"] else ("t-me" if "Middle" in row["Region"] else "t-glob")
     tc_tag  = "t-ops" if "Operations" in row["Type"] else "t-comm"
@@ -944,13 +1061,18 @@ def render_card(row):
         # شارة نصية بهوية بصرية مطابقة (أحمر Swissport)
         logo_h = '<div class="card-logo"><span class="swiss-badge">Swissport</span></div>'
     elif logo:
+        # ناقل محلي له شعاره الرسمي — الناقلات المحلية كلها أصلاً عملاء
+        # SGS مباشرين فما تحتاج وسم إضافي
         logo_h = f'''<div class="card-logo"><img src="{logo}" class="{img_cls}" alt=""></div>'''
+    elif carrier is None and is_sgs_affiliated(row, carrier):
+        # خبر دولي (Foreign) لشركة طيران متعاقدة مع SGS — يوسم بشعار SGS
+        # في الزاوية العلوية اليمنى للكرت (نفس مكان شعارات الناقلات المحلية)
+        logo_h = f'<div class="card-logo"><img src="{SGS_ICON_URI}" class="sgs-badge" title="SGS Partner Airline" alt="SGS"></div>'
     else:
         logo_h = ""
     st.markdown(f"""
 <a class="news-card {cls}" href="{row['Link']}" target="_blank" rel="noopener noreferrer">
   {logo_h}
-  {sgs_badge_html}
   <div class="card-title">{row['Title']}</div>
   <div class="card-summary">{summ}</div>
   <div class="card-meta">
@@ -963,7 +1085,7 @@ def render_card(row):
 </a>""", unsafe_allow_html=True)
 
 total = (len(df_local) if "Local Airlines 🇸🇦" in sel_cat else 0) + \
-        (len(df_intl)  if "International ✈️"   in sel_cat else 0) + \
+        (len(df_intl)  if "Foreign Airlines ✈️" in sel_cat else 0) + \
         (len(df_swiss) if "Swissport 🌐"        in sel_cat else 0)
 
 st.markdown(f'''<div class="sec-hdr">
@@ -976,8 +1098,8 @@ if "Local Airlines 🇸🇦" in sel_cat and not df_local.empty:
     st.markdown('<div id="sec-local"><span class="cat-badge cat-local">🇸🇦 Local Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_local.iterrows(): render_card(row)
 
-if "International ✈️" in sel_cat and not df_intl.empty:
-    st.markdown('<div id="sec-intl"><span class="cat-badge cat-intl">✈️ International Airlines</span></div>', unsafe_allow_html=True)
+if "Foreign Airlines ✈️" in sel_cat and not df_intl.empty:
+    st.markdown('<div id="sec-intl"><span class="cat-badge cat-intl">✈️ Foreign Airlines</span></div>', unsafe_allow_html=True)
     for _, row in df_intl.iterrows(): render_card(row)
 
 if "Swissport 🌐" in sel_cat and not df_swiss.empty:
