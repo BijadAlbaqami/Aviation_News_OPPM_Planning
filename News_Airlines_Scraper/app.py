@@ -622,7 +622,7 @@ with st.sidebar:
     st.session_state.days_back = days_back
     st.caption(f"Showing articles from last **{days_back} day{'s' if days_back>1 else ''}**")
 
-   st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sb-lbl">Category</div>', unsafe_allow_html=True)
     sel_cat = st.multiselect("", ["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
                              default=["Local Airlines 🇸🇦","International ✈️","Swissport 🌐"],
                              label_visibility="collapsed")
